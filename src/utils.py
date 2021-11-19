@@ -6,6 +6,8 @@ from math import isnan
 from urllib.request import urlopen
 from urllib.parse import urlencode
 
+from aiohttp import ClientSession
+
 load_dotenv()
 MS_DISTANCE_URL = os.getenv("MS_DISTANCE_URL")
 
@@ -36,3 +38,14 @@ def duration_diff_in_seconds(address1: str, address2: str) -> int:
     response = urlopen(url).read()
     json_data = json.loads(response)
     return json_data['duration']
+
+
+async def duration_diff_in_seconds_async(address1: str, address2: str) -> int:
+    if validate_nan(address1.split(' ')) or validate_nan(address2.split(' ')):
+        return -1
+    async with ClientSession() as session:
+        url_query = urlencode({'from': address1, 'to': address2})
+        url = MS_DISTANCE_URL + url_query
+        response = await session.get(url)
+        json_data = await response.json()
+        return json_data['duration']
