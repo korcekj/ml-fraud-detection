@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 from math import isnan
 from urllib.request import urlopen
 from urllib.parse import urlencode
-
 from aiohttp import ClientSession
 
 load_dotenv()
@@ -47,5 +46,7 @@ async def duration_diff_in_seconds_async(address1: str, address2: str) -> int:
         url_query = urlencode({'from': address1, 'to': address2})
         url = MS_DISTANCE_URL + url_query
         response = await session.get(url)
+        if response.status != 200:
+            response.raise_for_status()
         json_data = await response.json()
         return json_data['duration']
