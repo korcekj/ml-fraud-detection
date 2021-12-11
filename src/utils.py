@@ -29,7 +29,7 @@ def date_diff_in_seconds(date1: str, date2: str, date_format: str = '%Y-%m-%d %H
     return int((d1 - d2).total_seconds())
 
 
-def duration_diff_in_seconds(address1: str, address2: str) -> int:
+def duration_diff_in_seconds_sync(address1: str, address2: str) -> int:
     if is_nan(address1.split(' ')) or is_nan(address2.split(' ')):
         return -1
     url_query = urlencode({'from': address1, 'to': address2})
