@@ -82,11 +82,18 @@ def load_data():
 
 def main():
     time_start = perf_counter()
+
+    # Load input data
     train_data, test_data = load_data()
+
+    # Clean input data
     clean_data(train_data)
     clean_data(test_data)
-    find_fraudulent(train_data, 'data/fraudTrain.out.min.csv')
-    find_fraudulent(test_data, 'data/fraudTest.out.min.csv')
+
+    # Find fraudulent card transactions
+    # find_fraudulent(train_data, 'data/fraudTrain.out.min.csv')
+    # find_fraudulent(test_data, 'data/fraudTest.out.min.csv')
+
     time_end = perf_counter()
     logger.info(f'Task takes: {(time_end - time_start):.1f}s')
 
