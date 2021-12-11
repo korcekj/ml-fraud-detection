@@ -11,8 +11,8 @@ LOGGER_FORMAT = os.getenv("LOGGER_FORMAT")
 DATE_FORMAT = os.getenv("DATE_FORMAT")
 
 logging.basicConfig(format=LOGGER_FORMAT, datefmt=DATE_FORMAT)
-log = logging.getLogger()
-log.setLevel(logging.INFO)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 async def validate_transaction(transaction: Series) -> int:
@@ -27,7 +27,7 @@ async def validate_transaction(transaction: Series) -> int:
         )
         return 1 if date_diff_sec <= distance_diff_sec else 0
     except Exception as e:
-        log.exception(f'Transaction [{transaction["trans_num"]}]: {e}')
+        logger.exception(f'Transaction [{transaction["trans_num"]}]: {e}')
 
 
 async def process_transactions(transactions: DataFrame, index: int, total: int) -> DataFrame:
@@ -35,13 +35,13 @@ async def process_transactions(transactions: DataFrame, index: int, total: int) 
     transactions['prev_trans_date_trans_time'] = transactions['trans_date_trans_time'].shift(-1)
     transactions['prev_city'] = transactions['city'].shift(-1)
     transactions['prev_state'] = transactions['state'].shift(-1)
-    log.info(f'Card [{transactions["cc_num"].values[0]}]: Start')
+    logger.info(f'Card [{transactions["cc_num"].values[0]}]: Start')
     for row, transaction in transactions.iterrows():
-        log.info(f'Transaction [{transaction["trans_num"]}]: Start')
+        logger.info(f'Transaction [{transaction["trans_num"]}]: Start')
         transactions.loc[row, 'is_fraud_check'] = await validate_transaction(transaction)
-        log.info(f'Transaction [{transaction["trans_num"]}]: End')
-    log.info(f'Card [{transactions["cc_num"].values[0]}]: End')
-    log.info(f'--------------------{(index / total) * 100:.2f}%--------------------')
+        logger.info(f'Transaction [{transaction["trans_num"]}]: End')
+    logger.info(f'Card [{transactions["cc_num"].values[0]}]: End')
+    logger.info(f'--------------------{(index / total) * 100:.2f}%--------------------')
     return transactions.loc[:, ~transactions.columns.str.startswith('prev_')]
 
 
@@ -67,7 +67,7 @@ def find_fraudulent(data: Data, export_to: str = None):
         data.export(export_to, True)
 
 
-def prepare_data(data: Data):
+def clean_data(data: Data):
     data.remove_null_cells()
     data.remove_columns(['Unnamed: 0'])
 
@@ -83,12 +83,12 @@ def load_data():
 def main():
     time_start = perf_counter()
     train_data, test_data = load_data()
-    prepare_data(train_data)
-    prepare_data(test_data)
+    clean_data(train_data)
+    clean_data(test_data)
     find_fraudulent(train_data, 'data/fraudTrain.out.min.csv')
     find_fraudulent(test_data, 'data/fraudTest.out.min.csv')
     time_end = perf_counter()
-    log.info(f'Task takes: {(time_end - time_start):.1f}s')
+    logger.info(f'Task takes: {(time_end - time_start):.1f}s')
 
 
 if __name__ == '__main__':
