@@ -1,6 +1,9 @@
 import pandas as pd
+import math
 import os
+from . import visualization
 from sklearn.preprocessing import StandardScaler
+from plotly import graph_objects as go
 
 
 class Data:
@@ -78,6 +81,19 @@ class Data:
 
     def set_df(self, df: pd.DataFrame):
         self.__df = df
+
+    def visualize(self):
+        cols = 3
+        rows = math.ceil(len(self.__df.columns) / cols)
+        vis = visualization.Visualization(rows=rows, cols=cols)
+        col, row = 1, 1
+        for column in self.__df.columns:
+            if col > cols:
+                row += 1
+                col = 1
+            vis.add_graph(go.Box(y=self.__df[column], name=column), row=row, col=col)
+            col += 1
+        vis.get_figure().update_layout(height=rows * 500, showlegend=False).show()
 
     def print(self):
         def_cols = pd.get_option('display.max_columns')

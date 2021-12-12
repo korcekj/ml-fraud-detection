@@ -14,6 +14,9 @@ class Visualization:
         if self.__figure is None:
             self.__figure = make_subplots(rows=self.__rows, cols=self.__cols, subplot_titles=self.__titles)
 
+    def show(self):
+        self.__figure.show()
+
     def add_graph(self, graph, x_lab: str = '', y_lab: str = '', row: int = 1, col: int = 1):
         self.__figure.add_trace(graph, row=row, col=col)
         self.__figure.update_xaxes(title_text=x_lab, row=row, col=col)
