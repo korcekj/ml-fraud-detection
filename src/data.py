@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+from sklearn.preprocessing import StandardScaler
 
 
 class Data:
@@ -59,8 +60,30 @@ class Data:
         self.__df = new_df
         return self
 
+    def encode(self):
+        new_df = self.__df.select_dtypes(include=['object']).astype('category')
+        for column in new_df.columns:
+            self.__df[column] = new_df[column].cat.codes
+        return self
+
+    def normalize(self, target: str):
+        scaler = StandardScaler()
+        columns = [column for column in self.__df.columns if column != target]
+        scaled_values = scaler.fit_transform(self.__df[columns])
+        self.__df[columns] = pd.DataFrame(scaled_values, columns=columns)
+        return self
+
     def get_df(self) -> pd.DataFrame:
         return self.__df
 
     def set_df(self, df: pd.DataFrame):
         self.__df = df
+
+    def print(self):
+        def_cols = pd.get_option('display.max_columns')
+        pd.set_option('display.max_columns', len(self.__df.columns))
+        print(f'Description:\n{50 * "-"}')
+        print(self.__df.describe(include='all'))
+        print(f'Info:\n{50 * "-"}')
+        print(self.__df.info(verbose=True))
+        pd.set_option('display.max_columns', def_cols)
