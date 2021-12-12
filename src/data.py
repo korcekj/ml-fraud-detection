@@ -85,7 +85,7 @@ class Data:
     def visualize(self):
         cols = 3
         rows = math.ceil(len(self.__df.columns) / cols)
-        vis = visualization.Visualization(rows=rows, cols=cols)
+        vis = visualization.Visualization(titles=list(self.__df.columns), rows=rows, cols=cols)
         col, row = 1, 1
         for column in self.__df.columns:
             if col > cols:
