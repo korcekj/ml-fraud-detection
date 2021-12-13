@@ -82,7 +82,7 @@ class Data:
     def set_df(self, df: pd.DataFrame):
         self.__df = df
 
-    def visualize(self):
+    def vis_outliers(self):
         cols = 3
         rows = math.ceil(len(self.__df.columns) / cols)
         vis = visualization.Visualization(titles=list(self.__df.columns), rows=rows, cols=cols)
@@ -94,6 +94,16 @@ class Data:
             vis.add_graph(go.Box(y=self.__df[column], name=column), row=row, col=col)
             col += 1
         vis.get_figure().update_layout(height=rows * 500, showlegend=False).show()
+
+    def vis_correlation(self):
+        vis = visualization.Visualization()
+        new_df = self.__df.corr()
+        vis.add_graph(go.Heatmap(z=new_df, x=new_df.columns, y=new_df.columns))
+        vis.show()
+
+    def visualize(self):
+        self.vis_outliers()
+        self.vis_correlation()
 
     def print(self):
         def_cols = pd.get_option('display.max_columns')
