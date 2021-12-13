@@ -110,8 +110,8 @@ class Data:
     def print(self):
         def_cols = pd.get_option('display.max_columns')
         pd.set_option('display.max_columns', len(self.__df.columns))
-        print(f'Description:\n{50 * "-"}')
+        print(f'\nDescription:\n{50 * "-"}')
         print(self.__df.describe(include='all'))
-        print(f'Info:\n{50 * "-"}')
-        print(self.__df.info(verbose=True))
+        print(f'\nInfo:\n{50 * "-"}')
+        self.__df.info(verbose=True)
         pd.set_option('display.max_columns', def_cols)
