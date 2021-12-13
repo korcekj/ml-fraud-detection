@@ -101,9 +101,11 @@ class Data:
         vis.add_graph(go.Heatmap(z=new_df, x=new_df.columns, y=new_df.columns))
         vis.show()
 
-    def visualize(self):
-        self.vis_outliers()
-        self.vis_correlation()
+    def vis_target(self, target: str):
+        vis = Visualization(titles=['Number of frauds'])
+        new_df = self.__df[target]
+        vis.add_graph(go.Bar(x=new_df.unique(), y=new_df.value_counts().values), x_lab='is_fraud', y_lab='count')
+        vis.show()
 
     def print(self):
         def_cols = pd.get_option('display.max_columns')
