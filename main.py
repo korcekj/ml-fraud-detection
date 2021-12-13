@@ -1,6 +1,9 @@
 from time import perf_counter
 from src.data import Data
+from src.logger import Logger
 from src.utils import find_fraudulent
+
+logger = Logger.get_logger()
 
 
 def clean_data(data: Data):
@@ -25,19 +28,18 @@ def main():
 
     # Clean input data
     clean_data(test_data)
-    train_data.visualize()
+    clean_data(train_data)
 
     # Find fraudulent card transactions
     # find_fraudulent(train_data, 'data/fraudTrain.out.min.csv')
     # find_fraudulent(test_data, 'data/fraudTest.out.min.csv')
 
     # Prepare data for further processing
-    clean_data(train_data)
     prepare_data(train_data)
     prepare_data(test_data)
 
     time_end = perf_counter()
-    print(f'Task takes: {(time_end - time_start):.1f}s')
+    logger.info(f'Task takes: {(time_end - time_start):.1f}s')
 
 
 if __name__ == '__main__':

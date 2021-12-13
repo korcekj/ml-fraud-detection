@@ -1,8 +1,8 @@
 import os
 import json
-import logging
 import datetime as dt
 from src.data import Data
+from src.logger import Logger
 from math import isnan
 from dotenv import load_dotenv
 from urllib.request import urlopen
@@ -13,12 +13,8 @@ from pandas import DataFrame, Series
 
 load_dotenv()
 MS_DISTANCE_URL = os.getenv("MS_DISTANCE_URL")
-LOGGER_FORMAT = os.getenv("LOGGER_FORMAT")
-DATE_FORMAT = os.getenv("DATE_FORMAT")
 
-logging.basicConfig(format=LOGGER_FORMAT, datefmt=DATE_FORMAT)
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = Logger.get_logger()
 
 
 def is_nan(variables: list) -> bool:
@@ -101,6 +97,8 @@ def generate_coroutines(data: Data) -> list:
     coroutines = []
     cards = data.get_df()['cc_num'].unique()
     for i, card in enumerate(cards):
+        if i > 2:
+            break
         transactions = data.get_df().loc[data.get_df()['cc_num'] == card]
         coroutines.append(process_transactions(transactions, i + 1, len(cards)))
     return coroutines
