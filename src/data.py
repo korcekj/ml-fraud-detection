@@ -1,7 +1,7 @@
-import pandas as pd
-import math
 import os
-from . import visualization
+import math
+import pandas as pd
+from src.visualization import Visualization
 from sklearn.preprocessing import StandardScaler
 from plotly import graph_objects as go
 
@@ -85,7 +85,7 @@ class Data:
     def vis_outliers(self):
         cols = 3
         rows = math.ceil(len(self.__df.columns) / cols)
-        vis = visualization.Visualization(titles=list(self.__df.columns), rows=rows, cols=cols)
+        vis = Visualization(titles=list(self.__df.columns), rows=rows, cols=cols)
         col, row = 1, 1
         for column in self.__df.columns:
             if col > cols:
@@ -96,7 +96,7 @@ class Data:
         vis.get_figure().update_layout(height=rows * 500, showlegend=False).show()
 
     def vis_correlation(self):
-        vis = visualization.Visualization()
+        vis = Visualization()
         new_df = self.__df.corr()
         vis.add_graph(go.Heatmap(z=new_df, x=new_df.columns, y=new_df.columns))
         vis.show()
