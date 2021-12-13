@@ -16,7 +16,7 @@ def prepare_data(data: Data):
         ['trans_date_trans_time', 'cc_num', 'first', 'last', 'trans_num', 'dob', 'merch_lat', 'merch_long', 'unix_time']
     )
     data.encode()
-    data.normalize('is_fraud')
+    data.normalize()
 
 
 def main():
@@ -24,7 +24,9 @@ def main():
 
     # Load input data
     train_data = Data('data/fraudTrain.min.csv')
+    train_data.set_target('is_fraud')
     test_data = Data('data/fraudTest.min.csv')
+    test_data.set_target('is_fraud')
 
     # Clean input data
     clean_data(test_data)
@@ -37,6 +39,10 @@ def main():
     # Prepare data for further processing
     prepare_data(train_data)
     prepare_data(test_data)
+
+    # Initialize datasets
+    train_dataset = train_data.get_dataloader(shuffle=True)
+    test_dataset = test_data.get_dataloader(batch_size=1)
 
     time_end = perf_counter()
     logger.info(f'Task takes: {(time_end - time_start):.1f}s')
