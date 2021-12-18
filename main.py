@@ -1,6 +1,8 @@
+import torch
 from time import perf_counter
 from src.data import Data
 from src.logger import Logger
+from src.model import BinaryClassification, train_model, evaluate_model
 from src.utils import find_fraudulent
 
 logger = Logger.get_logger()
@@ -40,9 +42,20 @@ def main():
     prepare_data(train_data)
     prepare_data(test_data)
 
-    # Initialize datasets
-    train_dataset = train_data.get_dataloader(shuffle=True)
-    test_dataset = test_data.get_dataloader(batch_size=1)
+    # Initialize data loaders
+    train_dl = train_data.get_dataloader(shuffle=True)
+    test_dl = test_data.get_dataloader(batch_size=1)
+
+    # Initialize model
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model = BinaryClassification(12)
+    model.to(device)
+
+    # Train model
+    train_model(model, device, train_dl, epochs=30)
+
+    # Evaluate model
+    evaluate_model(model, device, test_dl)
 
     time_end = perf_counter()
     logger.info(f'Task takes: {(time_end - time_start):.1f}s')
