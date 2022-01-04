@@ -2,7 +2,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from plotly import graph_objects as go
 from sklearn.metrics import confusion_matrix, classification_report
+from src.visualization import Visualization
 from src.logger import Logger
 
 logger = Logger.get_logger()
@@ -109,3 +111,7 @@ def evaluate_model(model: nn.Module, test_dl: DataLoader):
     class_report = classification_report(y_actual_list, y_pred_list)
 
     logger.info(f'\n{class_report}')
+
+    vis = Visualization()
+    vis.add_graph(go.Heatmap(z=conf_matrix, x=[0, 1], y=[0, 1]), x_lab='Predicted', y_lab='Actual')
+    vis.show()
