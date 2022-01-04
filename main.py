@@ -1,8 +1,7 @@
-import torch
 from time import perf_counter
 from src.data import Data
 from src.logger import Logger
-from src.model import BinaryClassification, train_model, evaluate_model
+from src.model import get_model, train_model, evaluate_model
 from src.utils import find_fraudulent
 
 logger = Logger.get_logger()
@@ -25,9 +24,9 @@ def main():
     time_start = perf_counter()
 
     # Load input data
-    train_data = Data('data/fraudTrain.min.csv')
+    train_data = Data('data/fraudTrain.min.01.csv')
     train_data.set_target('is_fraud')
-    test_data = Data('data/fraudTest.min.csv')
+    test_data = Data('data/fraudTest.min.01.csv')
     test_data.set_target('is_fraud')
 
     # Clean input data
@@ -47,15 +46,14 @@ def main():
     test_dl = test_data.get_dataloader(batch_size=1)
 
     # Initialize model
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = BinaryClassification(12)
-    model.to(device)
+    features_size = len(train_dl.dataset[0][0])
+    model = get_model(features_size)
 
     # Train model
-    train_model(model, device, train_dl, epochs=30)
+    train_model(model, train_dl, epochs=50, lr=0.001)
 
     # Evaluate model
-    evaluate_model(model, device, test_dl)
+    evaluate_model(model, test_dl)
 
     time_end = perf_counter()
     logger.info(f'Task takes: {(time_end - time_start):.1f}s')

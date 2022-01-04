@@ -27,29 +27,39 @@ class BinaryClassification(nn.Module):
         x = self.batch_norm2(x)
         x = self.dropout(x)
         x = self.layer_out(x)
+        x = torch.sigmoid(x)
         return x
+
+
+def get_model(*args) -> nn.Module:
+    model = BinaryClassification(*args)
+    if torch.cuda.is_available():
+        model = model.cuda()
+    return model
 
 
 def accuracy(y_pred: torch.Tensor, y_test: torch.Tensor):
     # Round to 0 or 1
-    y_pred = torch.round(torch.sigmoid(y_pred))
+    y_pred = torch.round(y_pred)
     correct_results_sum = (y_pred == y_test).sum().float()
     acc = correct_results_sum / y_test.shape[0]
     return torch.round(acc * 100)
 
 
-def train_model(model: nn.Module, device: torch.device, train_dl: DataLoader, lr: float = 0.001, epochs: int = 1):
+def train_model(model: nn.Module, train_dl: DataLoader, lr: float = 0.001, epochs: int = 1):
     # Training mode
     model.train()
-    # BCEWithLogitsLoss function automatically applies the Sigmoid activation in final layer during training
-    criterion = nn.BCEWithLogitsLoss()
+    # Binary Cross Entropy between the target and the input probabilities
+    criterion = nn.BCELoss()
     # Adam optimizer
     optimizer = optim.Adam(model.parameters(), lr=lr)
     for epoch in range(1, epochs + 1):
         epoch_loss = 0
         epoch_acc = 0
         for inputs, targets in train_dl:
-            inputs, targets = inputs.to(device), targets.to(device)
+            # Transfer data to GPU if available
+            if torch.cuda.is_available():
+                inputs, targets = inputs.cuda(), targets.cuda()
             # Set gradient to 0 for each mini-batch
             optimizer.zero_grad()
             # Get a prediction
@@ -57,8 +67,9 @@ def train_model(model: nn.Module, device: torch.device, train_dl: DataLoader, lr
             # Get the loss and accuracy
             loss = criterion(y_pred, targets.unsqueeze(1))
             acc = accuracy(y_pred, targets.unsqueeze(1))
-            # Perform backpropagation
+            # Calculate gradients
             loss.backward()
+            # Update weights
             optimizer.step()
             # Add all the mini-batch losses and accuracies
             epoch_loss += loss.item()
@@ -69,7 +80,7 @@ def train_model(model: nn.Module, device: torch.device, train_dl: DataLoader, lr
         )
 
 
-def evaluate_model(model: nn.Module, device: torch.device, test_dl: DataLoader):
+def evaluate_model(model: nn.Module, test_dl: DataLoader):
     # Evaluation mode
     model.eval()
     y_pred_list = []
@@ -77,11 +88,14 @@ def evaluate_model(model: nn.Module, device: torch.device, test_dl: DataLoader):
     # Do not perform back-propagation during inference
     with torch.no_grad():
         for inputs, targets in test_dl:
-            inputs, targets = inputs.to(device), targets.to(device)
+            # Transfer data to GPU if available
+            if torch.cuda.is_available():
+                inputs, targets = inputs.cuda(), targets.cuda()
             # Get a prediction
             y_pred = model(inputs)
             # Round to 0 or 1
-            y_pred = torch.round(torch.sigmoid(y_pred))
+            # y_pred = torch.round(torch.sigmoid(y_pred))
+            y_pred = torch.round(y_pred)
             # Append to list of predictions and actuals
             y_pred_list.append(y_pred.cpu().numpy())
             y_actual_list.append(targets.cpu().numpy())
