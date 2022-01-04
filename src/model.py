@@ -96,7 +96,6 @@ def evaluate_model(model: nn.Module, test_dl: DataLoader):
             # Get a prediction
             y_pred = model(inputs)
             # Round to 0 or 1
-            # y_pred = torch.round(torch.sigmoid(y_pred))
             y_pred = torch.round(y_pred)
             # Append to list of predictions and actuals
             y_pred_list.append(y_pred.cpu().numpy())
