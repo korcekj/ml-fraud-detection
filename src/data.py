@@ -1,11 +1,18 @@
 import os
 import math
 import pandas as pd
+from enum import Enum
+from src.utils import Singleton
 from src.visualization import Visualization
 from sklearn.preprocessing import StandardScaler
 from plotly import graph_objects as go
 from torch.utils.data import Dataset, DataLoader
 from torch import FloatTensor
+
+
+class Scaler(StandardScaler, metaclass=Singleton):
+    def __init__(self):
+        super().__init__()
 
 
 class TorchDataset(Dataset):
@@ -20,10 +27,17 @@ class TorchDataset(Dataset):
         return len(self.X)
 
 
+class DataType(Enum):
+    TRAIN = 1
+    VALIDATION = 2
+    TEST = 3
+
+
 class Data:
-    def __init__(self, file_path: str, rows: int = 0):
+    def __init__(self, file_path: str, dt: DataType, rows: int = 0):
         self.__file_path = file_path
         self.__df = pd.DataFrame()
+        self.__dt = dt
         self.__target = None
         self.__load(rows)
 
@@ -87,9 +101,14 @@ class Data:
     def normalize(self):
         if self.__target is None:
             raise Exception('Target is missing')
-        scaler = StandardScaler()
+
+        scaler = Scaler()
         columns = self.get_features()
-        scaled_values = scaler.fit_transform(self.__df[self.get_features()])
+
+        if self.__dt == DataType.TRAIN:
+            scaler.fit(self.__df[columns])
+
+        scaled_values = scaler.transform(self.__df[columns])
         self.__df[columns] = pd.DataFrame(scaled_values, columns=columns)
         return self
 
@@ -120,8 +139,17 @@ class Data:
     def set_df(self, df: pd.DataFrame):
         self.__df = df
 
+    def get_target(self):
+        return self.__target
+
     def set_target(self, target: str):
         self.__target = target
+
+    def get_type(self):
+        return self.__dt
+
+    def set_type(self, dt: DataType):
+        self.__dt = dt
 
     def vis_outliers(self):
         cols = 3
