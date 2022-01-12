@@ -95,11 +95,14 @@ def evaluate_model(model: nn.Module, test_dl: DataLoader):
                 inputs, targets = inputs.cuda(), targets.cuda()
             # Get a prediction
             y_pred = model(inputs)
+            # Get an actual
+            actual = targets.numpy()
             # Round to 0 or 1
-            y_pred = torch.round(y_pred)
-            # Append to list of predictions and actuals
-            y_pred_list.append(y_pred.cpu().numpy())
-            y_actual_list.append(targets.cpu().numpy())
+            y_pred = y_pred.detach().numpy()
+            y_pred = y_pred.round()
+            # Append to list of predicted and actual values
+            y_pred_list.append(y_pred)
+            y_actual_list.append(actual)
 
     # Flatten out the list
     y_pred_list = [x.squeeze().tolist() for x in y_pred_list]
