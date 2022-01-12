@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 from torch import FloatTensor
 
 
-class PandasDataset(Dataset):
+class TorchDataset(Dataset):
     def __init__(self, x_data: FloatTensor, y_data: FloatTensor):
         self.X = x_data
         self.y = y_data
@@ -96,7 +96,7 @@ class Data:
     def get_dataset(self) -> Dataset:
         if self.__target is None:
             raise Exception('Target is missing')
-        return PandasDataset(
+        return TorchDataset(
             x_data=FloatTensor(self.__df[self.get_features()].values),
             y_data=FloatTensor(self.__df[self.__target].values)
         )
