@@ -11,14 +11,26 @@ from aiohttp import ClientSession
 from asyncio import gather, run
 from pandas import DataFrame, Series
 
+# Load environment variables
 load_dotenv()
 MS_DISTANCE_URL = os.getenv("MS_DISTANCE_URL")
 
+# Initiate the logger
 logger = Logger.get_logger()
 
 
 def is_nan(variables: list) -> bool:
+    """
+    Check whether the provided list of variables contains NaNs
+    :param variables: list of values to be checked
+    :return: boolean
+    """
     def validate(var) -> bool:
+        """
+        Validate the value against NaN check
+        :param var: value to be checked
+        :return: boolean
+        """
         try:
             return isnan(float(var))
         except ValueError:
@@ -28,6 +40,13 @@ def is_nan(variables: list) -> bool:
 
 
 def date_diff_in_seconds(date1: str, date2: str, date_format: str = '%Y-%m-%d %H:%M:%S') -> int:
+    """
+    Calculate the date difference in seconds
+    :param date1: date value number 1
+    :param date2: date value number 2
+    :param date_format: format of the dates
+    :return: date difference in seconds
+    """
     if is_nan([date1]) or is_nan([date2]):
         return -1
     d1 = dt.datetime.strptime(date1, date_format)
@@ -36,6 +55,12 @@ def date_diff_in_seconds(date1: str, date2: str, date_format: str = '%Y-%m-%d %H
 
 
 def duration_diff_in_seconds_sync(address1: str, address2: str) -> int:
+    """
+    Calculate the duration difference between places in seconds
+    :param address1: value representing an address number 1
+    :param address2: value representing an address number 1
+    :return: duration difference in seconds
+    """
     if is_nan(address1.split(' ')) or is_nan(address2.split(' ')):
         return -1
     url_query = urlencode({'from': address1, 'to': address2})
@@ -46,6 +71,12 @@ def duration_diff_in_seconds_sync(address1: str, address2: str) -> int:
 
 
 async def duration_diff_in_seconds_async(address1: str, address2: str) -> int:
+    """
+    Calculate the duration difference between places in seconds (asynchronously)
+    :param address1: value representing an address number 1
+    :param address2: value representing an address number 1
+    :return: duration difference in seconds
+    """
     if is_nan(address1.split(' ')) or is_nan(address2.split(' ')):
         return -1
     async with ClientSession() as session:
@@ -59,6 +90,11 @@ async def duration_diff_in_seconds_async(address1: str, address2: str) -> int:
 
 
 async def validate_transaction(transaction: Series) -> int:
+    """
+    Validate the transaction based on the location parameter (asynchronously)
+    :param transaction: transaction Series
+    :return: 0 for a fraudulent transaction and 1 for a non-fraudulent transaction
+    """
     try:
         date_diff_sec = date_diff_in_seconds(
             transaction['trans_date_trans_time'],
@@ -74,6 +110,13 @@ async def validate_transaction(transaction: Series) -> int:
 
 
 async def process_transactions(transactions: DataFrame, index: int, total: int) -> DataFrame:
+    """
+    Process the transactions DataFrame (asynchronously)
+    :param transactions: transactions DataFrame
+    :param index: transactions batch index
+    :param total: total number of transactions
+    :return: DataFrame object
+    """
     transactions = transactions.sort_values(by='trans_date_trans_time', ascending=False)
     transactions['prev_trans_date_trans_time'] = transactions['trans_date_trans_time'].shift(-1)
     transactions['prev_city'] = transactions['city'].shift(-1)
@@ -89,11 +132,21 @@ async def process_transactions(transactions: DataFrame, index: int, total: int) 
 
 
 async def run_coroutines(data: Data):
+    """
+    Run coroutines using Python concurrency libraries (asynchronously)
+    :param data: Data object
+    :return: coroutines to run
+    """
     coroutines = generate_coroutines(data)
     return await gather(*coroutines, return_exceptions=True)
 
 
 def generate_coroutines(data: Data) -> list:
+    """
+    Generate transactions coroutines
+    :param data: Data object
+    :return: list of coroutines generated
+    """
     coroutines = []
     cards = data.get_df()['cc_num'].unique()
     for i, card in enumerate(cards):
@@ -105,6 +158,11 @@ def generate_coroutines(data: Data) -> list:
 
 
 def find_fraudulent(data: Data, export_to: str = None):
+    """
+    Find fraudulent transactions
+    :param data: Data object
+    :param export_to: path to output file
+    """
     dataframes = run(run_coroutines(data))
     for dataframe in dataframes:
         data.merge(dataframe)

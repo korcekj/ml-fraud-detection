@@ -7,11 +7,19 @@ from sklearn.metrics import confusion_matrix, classification_report
 from src.visualization import Visualization
 from src.logger import Logger
 
+# Initiate the logger
 logger = Logger.get_logger()
 
 
 class BinaryClassification(nn.Module):
+    """
+    A class used to represent a Torch module/model
+    """
+
     def __init__(self, input_size: int):
+        """
+        :param input_size: number of feature columns
+        """
         super(BinaryClassification, self).__init__()
         self.layer_1 = nn.Linear(input_size, 64)
         self.layer_2 = nn.Linear(64, 64)
@@ -22,7 +30,11 @@ class BinaryClassification(nn.Module):
         self.batch_norm1 = nn.BatchNorm1d(64)
         self.batch_norm2 = nn.BatchNorm1d(64)
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
+        """
+        :param inputs: feature row of values
+        :return: Tensor object
+        """
         x = self.relu(self.layer_1(inputs))
         x = self.batch_norm1(x)
         x = self.relu(self.layer_2(x))
@@ -34,14 +46,24 @@ class BinaryClassification(nn.Module):
 
 
 def get_model(*args) -> nn.Module:
+    """
+    Get Torch module/model
+    :param args: arguments to be bypassed
+    :return: Module object
+    """
     model = BinaryClassification(*args)
     if torch.cuda.is_available():
         model = model.cuda()
     return model
 
 
-def accuracy(y_pred: torch.Tensor, y_test: torch.Tensor):
-    # Round to 0 or 1
+def accuracy(y_pred: torch.Tensor, y_test: torch.Tensor) -> torch.Tensor:
+    """
+    Calculate accuracy based on the prediction and the actual values
+    :param y_pred: predicated label
+    :param y_test: actual label
+    :return: Tensor object
+    """
     y_pred = torch.round(y_pred)
     correct_results_sum = (y_pred == y_test).sum().float()
     acc = correct_results_sum / y_test.shape[0]
@@ -49,15 +71,24 @@ def accuracy(y_pred: torch.Tensor, y_test: torch.Tensor):
 
 
 def train_model(model: nn.Module, train_dl: DataLoader, lr: float = 0.001, epochs: int = 1):
-    # Training mode
+    """
+    Train Torch module/model
+    :param model: Torch module/model
+    :param train_dl: Torch training dataloader
+    :param lr: learning rate
+    :param epochs: number of epochs
+    """
+    # Enable training mode
     model.train()
-    # Binary Cross Entropy between the target and the input probabilities
+    # Apply Binary Cross Entropy criterion function between the target and the input probabilities
     criterion = nn.BCELoss()
-    # Adam optimizer
+    # Use Adam optimizer
     optimizer = optim.Adam(model.parameters(), lr=lr)
+    # Iterate over each epoch
     for epoch in range(1, epochs + 1):
         epoch_loss = 0
         epoch_acc = 0
+        # Iterate over each feature and label
         for inputs, targets in train_dl:
             # Transfer data to GPU if available
             if torch.cuda.is_available():
@@ -83,12 +114,18 @@ def train_model(model: nn.Module, train_dl: DataLoader, lr: float = 0.001, epoch
 
 
 def evaluate_model(model: nn.Module, test_dl: DataLoader):
-    # Evaluation mode
+    """
+    Evaluate Torch module/model
+    :param model: Torch module/model
+    :param test_dl: Torch testing dataloader
+    """
+    # Enable evaluation mode
     model.eval()
     y_pred_list = []
     y_actual_list = []
     # Do not perform back-propagation during inference
     with torch.no_grad():
+        # Iterate over each feature and label
         for inputs, targets in test_dl:
             # Transfer data to GPU if available
             if torch.cuda.is_available():
@@ -97,14 +134,14 @@ def evaluate_model(model: nn.Module, test_dl: DataLoader):
             y_pred = model(inputs)
             # Get an actual
             actual = targets.numpy()
-            # Round to 0 or 1
+            # Get and round prediction to 0 or 1
             y_pred = y_pred.detach().numpy()
             y_pred = y_pred.round()
             # Append to list of predicted and actual values
             y_pred_list.append(y_pred)
             y_actual_list.append(actual)
 
-    # Flatten out the list
+    # Flatten out the lists
     y_pred_list = [x.squeeze().tolist() for x in y_pred_list]
     y_actual_list = [x.squeeze().tolist() for x in y_actual_list]
 
@@ -114,6 +151,7 @@ def evaluate_model(model: nn.Module, test_dl: DataLoader):
 
     logger.info(f'\n{class_report}')
 
+    # Visualize confusion matrix using the Visualization class
     vis = Visualization()
     vis.add_graph(go.Heatmap(z=conf_matrix, x=[0, 1], y=[0, 1]), x_lab='Predicted', y_lab='Actual')
     vis.show()

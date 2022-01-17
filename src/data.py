@@ -11,30 +11,60 @@ from torch import FloatTensor
 
 
 class Scaler(StandardScaler, metaclass=Singleton):
+    """
+    A class used to represent a StandardScaler by Singleton pattern
+    """
     def __init__(self):
         super().__init__()
 
 
 class TorchDataset(Dataset):
+    """
+    A class used to represent a Torch dataset
+    """
     def __init__(self, x_data: FloatTensor, y_data: FloatTensor):
+        """
+        :param x_data: tensor of features
+        :param y_data: tensor of target
+        """
         self.X = x_data
         self.y = y_data
 
     def __getitem__(self, index):
+        """
+        Get item based on the index
+        :param index: row index in the dataset
+        :return: tuple of tensors
+        """
         return self.X[index], self.y[index]
 
     def __len__(self):
+        """
+        Get length of the feature tensor
+        :return: length of the feature tensor
+        """
         return len(self.X)
 
 
 class DataType(Enum):
+    """
+    An enumeration used to represent type of the dataset
+    """
     TRAIN = 1
     VALIDATION = 2
     TEST = 3
 
 
 class Data:
+    """
+    A class used to represent a Pandas Dataframe with additional methods
+    """
     def __init__(self, file_path: str, dt: DataType, rows: int = 0):
+        """
+        :param file_path: path to the dataset
+        :param dt: data type of the dataset
+        :param rows: number of rows to pick up
+        """
         self.__file_path = file_path
         self.__df = pd.DataFrame()
         self.__dt = dt
@@ -42,16 +72,29 @@ class Data:
         self.__load(rows)
 
     def __load(self, rows: int):
+        """
+        Load a dataset with certain number of rows or an entire table
+        :param rows: number of rows to pick up
+        """
         if rows > 0:
             self.__minify(self.__file_path, rows)
         else:
             self.__read(self.__file_path)
 
     def __minify(self, file_in: str, rows: int):
+        """
+        Read only a certain number of rows
+        :param file_in: path to the dataset
+        :param rows: number of rows to pick up
+        """
         self.__read(file_in)
         self.__df = self.__df[:rows]
 
     def __read(self, file_in: str):
+        """
+        Read the dataset from input file
+        :param file_in: path to the dataset
+        """
         if not file_in:
             raise Exception('Input path is missing')
 
@@ -61,6 +104,11 @@ class Data:
         self.__df = pd.read_csv(file_in)
 
     def __write(self, file_out: str, overwrite: bool):
+        """
+        Write the dataset to output file
+        :param file_out: path to output file
+        :param overwrite: boolean
+        """
         if not file_out:
             raise Exception('Output path is missing')
 
@@ -70,35 +118,68 @@ class Data:
         self.__df.to_csv(file_out, index=False)
 
     def export(self, file_out: str, overwrite: bool = False):
+        """
+        Export the dataset to output file
+        :param file_out: path to output file
+        :param overwrite: boolean
+        :return: Data object
+        """
         self.__write(file_out, overwrite)
         return self
 
     def merge(self, data):
+        """
+        Merge Data object
+        :param data: Data object to be merged
+        :return: Data object
+        """
         self.__df = pd.concat([self.__df, data])
         return self
 
     def remove_null_cells(self):
+        """
+        Remove empty or null cells within the dataset
+        :return: Data object
+        """
         new_df: pd.DataFrame = self.__df.dropna()
         self.__df = new_df.reset_index(drop=True)
         return self
 
     def remove_columns(self, columns_to_remove: list):
+        """
+        Remove defined columns from the dataset
+        :param columns_to_remove: list of column names to be removed
+        :return: Data object
+        """
         columns = [column for column in self.__df.columns if column in columns_to_remove]
         self.__df = self.__df.drop(columns=columns)
         return self
 
     def sort_columns(self, sort_by: dict):
+        """
+        Sort columns in the dataset
+        :param sort_by: dictionary of column names and booleans as a value
+        :return: Data object
+        """
         new_df = self.__df.sort_values(by=list(sort_by.keys()), ascending=tuple(sort_by.values()))
         self.__df = new_df
         return self
 
     def encode(self):
+        """
+        Encode object columns within the dataset
+        :return: Data object
+        """
         new_df = self.__df.select_dtypes(include=['object']).astype('category')
         for column in new_df.columns:
             self.__df[column] = new_df[column].cat.codes
         return self
 
     def normalize(self):
+        """
+        Normalize feature columns in the dataset using a Scaler
+        :return: Data object
+        """
         if self.__target is None:
             raise Exception('Target is missing')
 
@@ -113,6 +194,10 @@ class Data:
         return self
 
     def get_dataset(self) -> Dataset:
+        """
+        Get a Torch dataset instance
+        :return: TorchDataset object
+        """
         if self.__target is None:
             raise Exception('Target is missing')
         return TorchDataset(
@@ -121,12 +206,23 @@ class Data:
         )
 
     def get_dataloader(self, batch_size: int = 64, shuffle: bool = False) -> DataLoader:
+        """
+        Get a Torch dataloader instance
+        :param batch_size: size of the batch as a number
+        :param shuffle: boolean
+        :return: DataLoader object
+        """
         if self.__target is None:
             raise Exception('Target is missing')
         dataset = self.get_dataset()
         return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
 
     def get_features(self, target: bool = False) -> list:
+        """
+        Get feature columns
+        :param target: boolean
+        :return: list of columns
+        """
         if target:
             return list(self.__df.columns)
         if self.__target is None:
@@ -134,24 +230,51 @@ class Data:
         return [column for column in self.__df.columns if column != self.__target]
 
     def get_df(self) -> pd.DataFrame:
+        """
+        Get Pandas dataframe property
+        :return: DataFrame object
+        """
         return self.__df
 
     def set_df(self, df: pd.DataFrame):
+        """
+        Set Pandas dataframe property
+        :param df: DataFrame object
+        """
         self.__df = df
 
-    def get_target(self):
+    def get_target(self) -> str:
+        """
+        Get target property
+        :return: column name
+        """
         return self.__target
 
     def set_target(self, target: str):
+        """
+        Set target property
+        :param target: column name
+        """
         self.__target = target
 
-    def get_type(self):
+    def get_type(self) -> DataType:
+        """
+        Get data type property
+        :return: type of the dataset
+        """
         return self.__dt
 
     def set_type(self, dt: DataType):
+        """
+        Set data type property
+        :param dt: DataType object
+        """
         self.__dt = dt
 
     def vis_outliers(self):
+        """
+        Visualize outliers using the Visualization class
+        """
         cols = 3
         rows = math.ceil(len(self.get_features(True)) / cols)
         vis = Visualization(titles=list(self.get_features(True)), rows=rows, cols=cols)
@@ -165,18 +288,27 @@ class Data:
         vis.get_figure().update_layout(height=rows * 500, showlegend=False).show()
 
     def vis_correlation(self):
+        """
+        Visualize correlation with the dataset using the Visualization class
+        """
         vis = Visualization()
         new_df = self.__df.corr()
         vis.add_graph(go.Heatmap(z=new_df, x=new_df.columns, y=new_df.columns))
         vis.show()
 
     def vis_target(self):
+        """
+        Visualize target ratio using the Visualization class
+        """
         vis = Visualization(titles=['Number of frauds'])
         new_df = self.__df[self.__target]
         vis.add_graph(go.Bar(x=new_df.unique(), y=new_df.value_counts().values), x_lab='is_fraud', y_lab='count')
         vis.show()
 
     def print(self):
+        """
+        Print statistics about the dataset
+        """
         def_cols = pd.get_option('display.max_columns')
         pd.set_option('display.max_columns', len(self.get_features(True)))
         print(f'\nDescription:\n{50 * "-"}')
