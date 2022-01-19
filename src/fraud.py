@@ -150,8 +150,6 @@ def generate_coroutines(data: Data) -> list:
     coroutines = []
     cards = data.get_df()['cc_num'].unique()
     for i, card in enumerate(cards):
-        if i > 2:
-            break
         transactions = data.get_df().loc[data.get_df()['cc_num'] == card]
         coroutines.append(process_transactions(transactions, i + 1, len(cards)))
     return coroutines
