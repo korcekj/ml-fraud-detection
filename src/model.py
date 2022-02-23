@@ -21,14 +21,14 @@ class BinaryClassification(nn.Module):
         :param input_size: number of feature columns
         """
         super(BinaryClassification, self).__init__()
-        self.layer_1 = nn.Linear(input_size, 64)
-        self.layer_2 = nn.Linear(64, 64)
-        self.layer_out = nn.Linear(64, 1)
+        self.layer_1 = nn.Linear(input_size, 32)
+        self.layer_2 = nn.Linear(32, 32)
+        self.layer_out = nn.Linear(32, 1)
 
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(p=0.1)
-        self.batch_norm1 = nn.BatchNorm1d(64)
-        self.batch_norm2 = nn.BatchNorm1d(64)
+        self.batch_norm1 = nn.BatchNorm1d(32)
+        self.batch_norm2 = nn.BatchNorm1d(32)
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
@@ -70,24 +70,33 @@ def accuracy(y_pred: torch.Tensor, y_test: torch.Tensor) -> torch.Tensor:
     return torch.round(acc * 100)
 
 
-def train_model(model: nn.Module, train_dl: DataLoader, lr: float = 0.001, epochs: int = 1):
+def train_model(
+        model: nn.Module,
+        train_dl: DataLoader,
+        valid_dl: DataLoader,
+        lr: float = 0.001,
+        epochs: int = 1
+):
     """
     Train Torch module/model
     :param model: Torch module/model
     :param train_dl: Torch training dataloader
+    :param valid_dl: Torch validation dataloader
     :param lr: learning rate
     :param epochs: number of epochs
     """
-    # Enable training mode
-    model.train()
     # Apply Binary Cross Entropy criterion function between the target and the input probabilities
     criterion = nn.BCELoss()
     # Use Adam optimizer
     optimizer = optim.Adam(model.parameters(), lr=lr)
+    train_results = {'loss': [], 'acc': []}
+    valid_results = {'loss': [], 'acc': []}
     # Iterate over each epoch
     for epoch in range(1, epochs + 1):
-        epoch_loss = 0
-        epoch_acc = 0
+        # Enable training mode
+        model.train()
+        train_loss = 0
+        train_acc = 0
         # Iterate over each feature and label
         for inputs, targets in train_dl:
             # Transfer data to GPU if available
@@ -97,7 +106,7 @@ def train_model(model: nn.Module, train_dl: DataLoader, lr: float = 0.001, epoch
             optimizer.zero_grad()
             # Get a prediction
             y_pred = model(inputs)
-            # Get the loss and accuracy
+            # Get the training loss and accuracy
             loss = criterion(y_pred, targets.unsqueeze(1))
             acc = accuracy(y_pred, targets.unsqueeze(1))
             # Calculate gradients
@@ -105,12 +114,50 @@ def train_model(model: nn.Module, train_dl: DataLoader, lr: float = 0.001, epoch
             # Update weights
             optimizer.step()
             # Add all the mini-batch losses and accuracies
-            epoch_loss += loss.item()
-            epoch_acc += acc.item()
+            train_loss += loss.item()
+            train_acc += acc.item()
+
+        with torch.no_grad():
+            # Enable evaluation mode
+            model.eval()
+            valid_loss = 0
+            valid_acc = 0
+            # Iterate over each feature and label
+            for inputs, targets in valid_dl:
+                # Transfer data to GPU if available
+                if torch.cuda.is_available():
+                    inputs, targets = inputs.cuda(), targets.cuda()
+                # Get a prediction
+                y_pred = model(inputs)
+                # Get the training loss and accuracy
+                loss = criterion(y_pred, targets.unsqueeze(1))
+                acc = accuracy(y_pred, targets.unsqueeze(1))
+                # Add all the mini-batch losses and accuracies
+                valid_loss += loss.item()
+                valid_acc += acc.item()
+
+        # Append average losses and accuracies for each epoch to list
+        train_results['loss'].append(train_loss / len(train_dl))
+        train_results['acc'].append(train_acc / len(train_dl))
+        valid_results['loss'].append(valid_loss / len(valid_dl))
+        valid_results['acc'].append(valid_acc / len(valid_dl))
+
         # Print average losses and accuracies for each epoch
         logger.info(
-            f'Epoch {epoch + 0:03}: | Loss: {epoch_loss / len(train_dl):.5f} | Acc: {epoch_acc / len(train_dl):.3f}'
+            f'Epoch {epoch:03}:'
+            f' | Training Loss: {train_loss / len(train_dl):.5f}'
+            f' | Training Acc: {train_acc / len(train_dl):.3f}'
+            f' | Validation Loss: {valid_loss / len(valid_dl):.5f}'
+            f' | Validation Acc: {valid_acc / len(valid_dl):.3f}'
         )
+
+    # Visualize average losses and accuracies using the Visualization class
+    vis = Visualization(rows=1, cols=2)
+    vis.add_graph(go.Scatter(y=train_results['loss'], name='Train'), row=1, col=1, x_lab='Epoch', y_lab='Loss')
+    vis.add_graph(go.Scatter(y=valid_results['loss'], name='Valid'), row=1, col=1, x_lab='Epoch', y_lab='Loss')
+    vis.add_graph(go.Scatter(y=train_results['acc'], name='Train'), row=1, col=2, x_lab='Epoch', y_lab='Accuracy')
+    vis.add_graph(go.Scatter(y=valid_results['acc'], name='Valid'), row=1, col=2, x_lab='Epoch', y_lab='Accuracy')
+    vis.show()
 
 
 def evaluate_model(model: nn.Module, test_dl: DataLoader):

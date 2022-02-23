@@ -37,13 +37,20 @@ def main():
     time_start = perf_counter()
 
     # Load input data
-    train_data = Data('data/fraudTrain.min.02.csv', DataType.TRAIN)
-    train_data.set_target('is_fraud')
-    test_data = Data('data/fraudTest.min.02.csv', DataType.TEST)
-    test_data.set_target('is_fraud')
+    train_data, valid_data = Data.split_file(
+        'data/fraudTrain.min.02.csv',
+        [DataType.TRAIN, DataType.VALIDATION],
+        'is_fraud'
+    )
+    test_data = Data.file(
+        'data/fraudTest.min.02.csv',
+        DataType.TEST,
+        'is_fraud'
+    )
 
     # Clean input data
     clean_data(train_data)
+    clean_data(valid_data)
     clean_data(test_data)
 
     # Find fraudulent card transactions
@@ -52,10 +59,12 @@ def main():
 
     # Prepare data for further processing
     prepare_data(train_data)
+    prepare_data(valid_data)
     prepare_data(test_data)
 
     # Initialize data loaders
     train_dl = train_data.get_dataloader(shuffle=True)
+    valid_dl = valid_data.get_dataloader(batch_size=1)
     test_dl = test_data.get_dataloader(batch_size=1)
 
     # Initialize model
@@ -63,7 +72,7 @@ def main():
     model = get_model(features_size)
 
     # Train model
-    train_model(model, train_dl, epochs=30, lr=0.001)
+    train_model(model, train_dl, valid_dl, epochs=120, lr=0.001)
 
     # Evaluate model
     evaluate_model(model, test_dl)

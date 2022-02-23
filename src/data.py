@@ -2,9 +2,11 @@ import os
 import math
 import pandas as pd
 from enum import Enum
+from typing import Union, List
 from src.utils import Singleton
 from src.visualization import Visualization
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 from plotly import graph_objects as go
 from torch.utils.data import Dataset, DataLoader
 from torch import FloatTensor
@@ -14,6 +16,7 @@ class Scaler(StandardScaler, metaclass=Singleton):
     """
     A class used to represent a StandardScaler by Singleton pattern
     """
+
     def __init__(self):
         super().__init__()
 
@@ -22,6 +25,7 @@ class TorchDataset(Dataset):
     """
     A class used to represent a Torch dataset
     """
+
     def __init__(self, x_data: FloatTensor, y_data: FloatTensor):
         """
         :param x_data: tensor of features
@@ -59,19 +63,82 @@ class Data:
     """
     A class used to represent a Pandas Dataframe with additional methods
     """
-    def __init__(self, file_path: str, dt: DataType, rows: int = 0):
+
+    def __init__(self, file_path: Union[str, None], df: Union[pd.DataFrame, None], dt: DataType, target: str):
         """
         :param file_path: path to the dataset
+        :param df: DataFrame object
         :param dt: data type of the dataset
-        :param rows: number of rows to pick up
+        :param target: column name
         """
         self.__file_path = file_path
-        self.__df = pd.DataFrame()
+        self.__df = df
         self.__dt = dt
-        self.__target = None
-        self.__load(rows)
+        self.__target = target
 
-    def __load(self, rows: int):
+        if self.__file_path is None and self.__df is None:
+            raise Exception('Wrong initialization')
+
+    @classmethod
+    def file(cls, file_path: str, dt: DataType, target: str, rows: int = 0):
+        """
+        Initialize class from file
+        :param file_path: path to the dataset
+        :param dt: data type of the dataset
+        :param target: column name
+        :param rows: number of rows to pick up
+        :return: Data object
+        """
+        data = cls(file_path, None, dt, target)
+        data.load(rows)
+        return data
+
+    @classmethod
+    def split_file(cls, file_path: str, dts: List[DataType], target: str, split_ratio: int = 0.3, rows: int = 0):
+        """
+        Initialize classes from file based on the split parameters
+        :param file_path: path to the dataset
+        :param dts: array of data types used in datasets
+        :param target: column name
+        :param split_ratio: ratio of "train" and "test" data
+        :param rows: number of rows to pick up
+        :return: Data objects
+        """
+        data_1 = cls(file_path, None, dts[0], target)
+        data_1.load(rows)
+        df_1, df_2 = train_test_split(data_1.get_df(), test_size=split_ratio, random_state=42)
+        data_1.set_df(df_1)
+        data_2 = cls(None, df_2, dts[1], target)
+        return data_1, data_2
+
+    @classmethod
+    def dataframe(cls, df: pd.DataFrame, dt: DataType, target: str):
+        """
+        Initialize class from DataFrame object
+        :param df: DataFrame object
+        :param dt: data type of the dataset
+        :param target: column name
+        :return: Data object
+        """
+        data = cls(None, df, dt, target)
+        return data
+
+    @classmethod
+    def split_dataframe(cls, df: pd.DataFrame, dts: List[DataType], target: str, split_ratio: int = 0.3):
+        """
+        Initialize classes from DataFrame based on the split parameters
+        :param df: DataFrame object
+        :param dts: array of data types used in datasets
+        :param target: column name
+        :param split_ratio: ratio of "train" and "test" data
+        :return: Data objects
+        """
+        df_1, df_2 = train_test_split(df, test_size=split_ratio, random_state=42)
+        data_1 = cls(None, df_1, dts[0], target)
+        data_2 = cls(None, df_2, dts[1], target)
+        return data_1, data_2
+
+    def load(self, rows: int):
         """
         Load a dataset with certain number of rows or an entire table
         :param rows: number of rows to pick up
@@ -205,7 +272,7 @@ class Data:
             y_data=FloatTensor(self.__df[self.__target].values)
         )
 
-    def get_dataloader(self, batch_size: int = 64, shuffle: bool = False) -> DataLoader:
+    def get_dataloader(self, batch_size: int = 32, shuffle: bool = False) -> DataLoader:
         """
         Get a Torch dataloader instance
         :param batch_size: size of the batch as a number
