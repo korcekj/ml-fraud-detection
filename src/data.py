@@ -94,7 +94,7 @@ class Data:
         return data
 
     @classmethod
-    def split_file(cls, file_path: str, dts: List[DataType], target: str, split_ratio: int = 0.3, rows: int = 0):
+    def split_file(cls, file_path: str, dts: List[DataType], target: str, split_ratio: float = 0.2, rows: int = 0):
         """
         Initialize classes from file based on the split parameters
         :param file_path: path to the dataset
