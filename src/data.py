@@ -8,8 +8,11 @@ from src.visualization import Visualization
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from plotly import graph_objects as go
-from torch.utils.data import Dataset, DataLoader
 from torch import FloatTensor
+from torch.utils.data import Dataset, DataLoader
+from imblearn.pipeline import Pipeline
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
 
 
 class Scaler(StandardScaler, metaclass=Singleton):
@@ -94,7 +97,7 @@ class Data:
         return data
 
     @classmethod
-    def split_file(cls, file_path: str, dts: List[DataType], target: str, split_ratio: float = 0.2, rows: int = 0):
+    def split_file(cls, file_path: str, dts: List[DataType], target: str, split_ratio: float = 0.3, rows: int = 0):
         """
         Initialize classes from file based on the split parameters
         :param file_path: path to the dataset
@@ -124,7 +127,7 @@ class Data:
         return data
 
     @classmethod
-    def split_dataframe(cls, df: pd.DataFrame, dts: List[DataType], target: str, split_ratio: int = 0.3):
+    def split_dataframe(cls, df: pd.DataFrame, dts: List[DataType], target: str, split_ratio: float = 0.3):
         """
         Initialize classes from DataFrame based on the split parameters
         :param df: DataFrame object
@@ -258,6 +261,25 @@ class Data:
 
         scaled_values = scaler.transform(self.__df[columns])
         self.__df[columns] = pd.DataFrame(scaled_values, columns=columns)
+        return self
+
+    def balance(self, over_strategy: float = 0.1, under_strategy: float = 0.5):
+        """
+        Balance an imbalanced dataset
+        :param over_strategy: ratio of over-sampled data
+        :param under_strategy: ratio of under-sampled data
+        :return: Data object
+        """
+        target = self.get_target()
+        columns = self.get_features()
+        over_sampler = SMOTE(sampling_strategy=over_strategy)
+        under_sampler = RandomUnderSampler(sampling_strategy=under_strategy)
+        steps = [('o', over_sampler), ('u', under_sampler)]
+        pipeline = Pipeline(steps=steps)
+        x_balanced, y_balanced = pipeline.fit_resample(self.__df[columns], self.__df[target])
+        self.__df = pd.DataFrame(None)
+        self.__df[columns] = pd.DataFrame(x_balanced, columns=columns)
+        self.__df[target] = pd.DataFrame(y_balanced, columns=[target])
         return self
 
     def get_dataset(self) -> Dataset:
