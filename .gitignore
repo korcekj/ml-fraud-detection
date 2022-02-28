@@ -139,3 +139,11 @@ cython_debug/
 
 # Pycharm
 .idea
+
+# Data
+/data
+!/data/fraudTrain.csv
+!/data/fraudTest.csv
+
+# Models
+/models
