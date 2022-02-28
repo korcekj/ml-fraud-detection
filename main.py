@@ -1,7 +1,7 @@
 from time import perf_counter
 from src.data import Data, DataType
 from src.logger import Logger
-from src.model import get_model, train_model, evaluate_model
+from src.model import NeuralNetwork
 from src.fraud import find_fraudulent
 
 # Initiate the logger
@@ -62,20 +62,15 @@ def main():
     prepare_data(valid_data)
     prepare_data(test_data)
 
-    # Initialize data loaders
-    train_dl = train_data.get_dataloader(shuffle=True)
-    valid_dl = valid_data.get_dataloader(batch_size=1)
-    test_dl = test_data.get_dataloader(batch_size=1)
-
     # Initialize model
     features_size = len(train_data.get_features())
-    model = get_model(features_size)
+    model = NeuralNetwork.create(features_size)
 
     # Train model
-    train_model(model, train_dl, valid_dl, epochs=120, lr=0.001)
+    model.fit(train_data, valid_data, batch_size=32, lr=0.001, epochs=120)
 
     # Evaluate model
-    evaluate_model(model, test_dl)
+    model.evaluate(test_data)
 
     # Stop timer
     time_end = perf_counter()
