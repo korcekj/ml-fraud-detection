@@ -122,7 +122,6 @@ class NeuralNetwork(nn.Module):
             batch_size: int = 32,
             lr: float = 0.001,
             epochs: int = 1,
-            save_to: str = None
     ):
         """
         Train Torch module/model
@@ -131,7 +130,6 @@ class NeuralNetwork(nn.Module):
         :param batch_size: size of the batch as a number
         :param lr: learning rate
         :param epochs: number of epochs
-        :param save_to: path to output file
         """
         # Apply Binary Cross Entropy criterion function between the target and the input probabilities
         criterion = nn.BCELoss()
@@ -202,10 +200,6 @@ class NeuralNetwork(nn.Module):
                 f' | Validation Loss: {valid_loss / len(valid_dl):.5f}'
                 f' | Validation Acc: {valid_acc / len(valid_dl):.3f}'
             )
-
-        # Save the Torch module/model
-        if save_to is not None:
-            self.__write(save_to, True)
 
         # Visualize average losses and accuracies using the Visualization class
         vis = Visualization(rows=1, cols=2)
