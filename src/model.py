@@ -32,13 +32,16 @@ class NeuralNetwork(nn.Module):
         self.batch_norm2 = nn.BatchNorm1d(32)
 
     @classmethod
-    def create(cls, *args):
+    def create(cls, input_size: int, file_path: str = None):
         """
         Get Torch module/model
-        :param args: arguments to be bypassed
+        :param input_size: number of feature columns
+        :param file_path: path to input file
         :return: Module object
         """
-        model = cls(*args)
+        model = cls(input_size)
+        if file_path is not None:
+            model.load(file_path)
         if torch.cuda.is_available():
             model = model.cuda()
         return model
