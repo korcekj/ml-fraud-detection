@@ -1,82 +1,157 @@
+import sys
+import click
 from time import perf_counter
 from src.data import Data, DataType
-from src.logger import Logger
 from src.model import NeuralNetwork
 from src.fraud import find_fraudulent
 
-# Initiate the logger
-logger = Logger.get_logger()
 
-
-def clean_data(data: Data):
-    """
-    Clean the dataset from unwanted columns or empty cells
-    :param data:
-    """
-    data.remove_columns(['Unnamed: 0'])
-    data.remove_null_cells()
-
-
-def prepare_data(data: Data):
-    """
-    Prepare data for further processing
-    :param data: Data object
-    """
-    data.remove_columns(
-        ['trans_date_trans_time', 'cc_num', 'first', 'last', 'trans_num', 'dob', 'merch_lat', 'merch_long', 'unix_time']
-    )
-    data.encode()
-    data.normalize()
-
-
+@click.group()
 def main():
     """
-    Main function to run
+    Argument commands group
+    """
+    pass
+
+
+@main.command('cd')
+@click.option('-di', '--data-import', type=click.Path(exists=True), required=True, help='Data file path for import')
+@click.option('-de', '--data-export', type=click.Path(), required=True, help='Data file path for export')
+@click.option('-t', '--target', required=True, help='Name of target column')
+@click.option('-r', '--rows', type=click.INT, default=0, help='Number of rows to be processed')
+@click.option('-c', '--columns', help='Columns to be removed')
+def clean_data(data_import: str, data_export: str, target: str, rows: int, columns: str):
+    """
+    Clean the dataset from unwanted columns and empty cells
+    :param data_import: path to input file
+    :param data_export: path to output file
+    :param target: column name
+    :param rows: number of rows to pick up
+    :param columns: column names to be removed
     """
     # Start timer
     time_start = perf_counter()
 
-    # Load input data
-    train_data, valid_data = Data.split_file(
-        'data/fraudTrain.min.02.csv',
-        [DataType.TRAIN, DataType.VALIDATION],
-        'is_fraud'
-    )
-    test_data = Data.file(
-        'data/fraudTest.min.02.csv',
-        DataType.TEST,
-        'is_fraud'
-    )
+    # Initialize data
+    data = Data.file(data_import, DataType.UNDEFINED, target, rows)
 
-    # Clean input data
-    clean_data(train_data)
-    clean_data(valid_data)
-    clean_data(test_data)
+    # Remove unnecessary data
+    data.remove_null_cells()
+    if columns is not None:
+        data.remove_columns(columns.split(','))
 
-    # Find fraudulent card transactions
-    # find_fraudulent(train_data, 'data/fraudTrain.out.min.csv')
-    # find_fraudulent(test_data, 'data/fraudTest.out.min.csv')
-
-    # Prepare data for further processing
-    prepare_data(train_data)
-    prepare_data(valid_data)
-    prepare_data(test_data)
-
-    # Initialize model
-    features_size = len(train_data.get_features())
-    model = NeuralNetwork.create(features_size)
-
-    # Train model
-    model.fit(train_data, valid_data, batch_size=32, lr=0.001, epochs=120)
-
-    # Evaluate model
-    model.evaluate(test_data)
+    # Export data
+    data.export(data_export, True)
 
     # Stop timer
     time_end = perf_counter()
-    # Print the number of seconds it takes for the main function to run
-    logger.info(f'Task takes: {(time_end - time_start):.1f}s')
+    # Print the number of seconds it takes for the function to run
+    click.echo(f'Task takes: {(time_end - time_start):.1f}s')
+
+
+@main.command('fd')
+@click.option('-di', '--data-import', type=click.Path(exists=True), required=True, help='Data file path for import')
+@click.option('-de', '--data-export', type=click.Path(), required=True, help='Data file path for export')
+@click.option('-t', '--target', required=True, help='Name of target column')
+@click.option('-r', '--rows', type=click.INT, default=0, help='Number of rows to be processed')
+def fraud_detection(data_import: str, data_export: str, target: str, rows: int):
+    """
+    Detect fraud transactions using microservice
+    :param data_import: path to input file
+    :param data_export: path to output file
+    :param target: column name
+    :param rows: number of rows to pick up
+    """
+    # Start timer
+    time_start = perf_counter()
+
+    # Initialize data
+    data = Data.file(data_import, DataType.UNDEFINED, target, rows)
+
+    # Find fraudulent transactions
+    find_fraudulent(data)
+
+    # Export data
+    if data_export is not None:
+        data.export(data_export, True)
+
+    # Stop timer
+    time_end = perf_counter()
+    # Print the number of seconds it takes for the function to run
+    click.echo(f'Task takes: {(time_end - time_start):.1f}s')
+
+
+@main.command('nn')
+@click.option('-tnd', '--train-data', type=click.Path(exists=True), required=True, help='Training data file path')
+@click.option('-ttd', '--test-data', type=click.Path(exists=True), required=True, help='Testing data file path')
+@click.option('-mi', '--module-import', type=click.Path(exists=True), help='Module file path for import')
+@click.option('-me', '--module-export', type=click.Path(), help='Module file path for export')
+@click.option('-vs', '--valid-split', type=click.FloatRange(0, 1), default=0.3, help='Validation split')
+@click.option('-bs', '--batch-size', type=click.IntRange(1, 32_768), default=32, help='Batch size')
+@click.option('-lr', '--learning-rate', type=click.FloatRange(0, 1), default=0.001, help='Learning rate')
+@click.option('-e', '--epochs', type=click.IntRange(1, 10_000), default=100, help='Batch size')
+@click.option('-t', '--target', required=True, help='Name of target column')
+def neural_network(
+        train_data: str,
+        test_data: str,
+        module_import: str,
+        module_export: str,
+        valid_split: float,
+        batch_size: int,
+        learning_rate: float,
+        epochs: int,
+        target: str,
+):
+    """
+    Detect fraud transactions using neural network
+    :param train_data: path to training data
+    :param test_data: path to testing data
+    :param module_import: path to module for import
+    :param module_export: path to module for export
+    :param target: column name
+    :param valid_split: ratio of "valid" data
+    :param batch_size: size of the batch
+    :param learning_rate: learning rate
+    :param epochs: number of epochs
+    """
+    # Start timer
+    time_start = perf_counter()
+
+    # Load data
+    data_train, data_valid = Data.split_file(train_data, [DataType.TRAIN, DataType.VALIDATION], target, valid_split)
+    data_test = Data.file(test_data, DataType.TEST, target)
+
+    # Normalize data
+    data_train.remove_null_cells().encode().normalize()
+    data_valid.remove_null_cells().encode().normalize()
+    data_test.remove_null_cells().encode().normalize()
+
+    # Initialize model
+    features_size = len(data_train.get_features())
+    model = NeuralNetwork.create(features_size, module_import)
+
+    # Train model
+    if module_import is None:
+        model.fit(data_train, data_valid, batch_size, learning_rate, epochs)
+
+    # Evaluate model
+    model.evaluate(data_test)
+
+    # Export model
+    if module_export is not None:
+        model.export(module_export, True)
+
+    # Stop timer
+    time_end = perf_counter()
+    # Print the number of seconds it takes for the function to run
+    click.echo(f'Task takes: {(time_end - time_start):.1f}s')
 
 
 if __name__ == '__main__':
+    """
+    Main function to run
+    """
+    args = sys.argv
+    if "--help" in args or len(args) == 1:
+        click.echo("Fraud detection")
     main()
