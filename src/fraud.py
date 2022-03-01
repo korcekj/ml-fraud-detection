@@ -1,10 +1,10 @@
 import os
 import json
-import datetime as dt
+import math
+import click
 from src.data import Data
-from src.logger import Logger
-from math import isnan
 from dotenv import load_dotenv
+from datetime import datetime
 from urllib.request import urlopen
 from urllib.parse import urlencode
 from aiohttp import ClientSession
@@ -15,9 +15,6 @@ from pandas import DataFrame, Series
 load_dotenv()
 MS_DISTANCE_URL = os.getenv("MS_DISTANCE_URL")
 
-# Initiate the logger
-logger = Logger.get_logger()
-
 
 def is_nan(variables: list) -> bool:
     """
@@ -25,6 +22,7 @@ def is_nan(variables: list) -> bool:
     :param variables: list of values to be checked
     :return: boolean
     """
+
     def validate(var) -> bool:
         """
         Validate the value against NaN check
@@ -32,7 +30,7 @@ def is_nan(variables: list) -> bool:
         :return: boolean
         """
         try:
-            return isnan(float(var))
+            return math.isnan(float(var))
         except ValueError:
             return False
 
@@ -49,8 +47,8 @@ def date_diff_in_seconds(date1: str, date2: str, date_format: str = '%Y-%m-%d %H
     """
     if is_nan([date1]) or is_nan([date2]):
         return -1
-    d1 = dt.datetime.strptime(date1, date_format)
-    d2 = dt.datetime.strptime(date2, date_format)
+    d1 = datetime.strptime(date1, date_format)
+    d2 = datetime.strptime(date2, date_format)
     return int((d1 - d2).total_seconds())
 
 
@@ -106,7 +104,7 @@ async def validate_transaction(transaction: Series) -> int:
         )
         return 1 if date_diff_sec <= distance_diff_sec else 0
     except Exception as e:
-        logger.exception(f'Transaction [{transaction["trans_num"]}]: {e}')
+        click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Transaction [{transaction["trans_num"]}]: {e}', err=True)
 
 
 async def process_transactions(transactions: DataFrame, index: int, total: int) -> DataFrame:
@@ -121,13 +119,13 @@ async def process_transactions(transactions: DataFrame, index: int, total: int) 
     transactions['prev_trans_date_trans_time'] = transactions['trans_date_trans_time'].shift(-1)
     transactions['prev_city'] = transactions['city'].shift(-1)
     transactions['prev_state'] = transactions['state'].shift(-1)
-    logger.info(f'Card [{transactions["cc_num"].values[0]}]: Start')
+    click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Card [{transactions["cc_num"].values[0]}]: Start')
     for row, transaction in transactions.iterrows():
-        logger.info(f'Transaction [{transaction["trans_num"]}]: Start')
+        click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Transaction [{transaction["trans_num"]}]: Start')
         transactions.loc[row, 'is_fraud_check'] = await validate_transaction(transaction)
-        logger.info(f'Transaction [{transaction["trans_num"]}]: End')
-    logger.info(f'Card [{transactions["cc_num"].values[0]}]: End')
-    logger.info(f'--------------------{(index / total) * 100:.2f}%--------------------')
+        click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Transaction [{transaction["trans_num"]}]: End')
+    click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Card [{transactions["cc_num"].values[0]}]: End')
+    click.echo(f'--------------------{(index / total) * 100:.2f}%--------------------')
     return transactions.loc[:, ~transactions.columns.str.startswith('prev_')]
 
 

@@ -1,15 +1,13 @@
 import os
+import click
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from datetime import datetime
 from plotly import graph_objects as go
 from sklearn.metrics import confusion_matrix, classification_report
 from src.data import Data
-from src.logger import Logger
 from src.visualization import Visualization
-
-# Initiate the logger
-logger = Logger.get_logger()
 
 
 class NeuralNetwork(nn.Module):
@@ -196,8 +194,8 @@ class NeuralNetwork(nn.Module):
             valid_results['acc'].append(valid_acc / len(valid_dl))
 
             # Print average losses and accuracies for each epoch
-            logger.info(
-                f'Epoch {epoch:03}:'
+            click.echo(
+                f'[{datetime.now().strftime("%H:%M:%S")}] Epoch {epoch:03}:'
                 f' | Training Loss: {train_loss / len(train_dl):.5f}'
                 f' | Training Acc: {train_acc / len(train_dl):.3f}'
                 f' | Validation Loss: {valid_loss / len(valid_dl):.5f}'
@@ -250,7 +248,7 @@ class NeuralNetwork(nn.Module):
         conf_matrix = confusion_matrix(y_actual_list, y_pred_list)
         class_report = classification_report(y_actual_list, y_pred_list)
 
-        logger.info(f'\n{class_report}')
+        click.echo(f'\n{class_report}')
 
         # Visualize confusion matrix using the Visualization class
         vis = Visualization()

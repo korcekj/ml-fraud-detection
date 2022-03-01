@@ -1,5 +1,6 @@
 import os
 import math
+import click
 import pandas as pd
 from enum import Enum
 from typing import Union, List
@@ -401,8 +402,8 @@ class Data:
         """
         def_cols = pd.get_option('display.max_columns')
         pd.set_option('display.max_columns', len(self.get_features(True)))
-        print(f'\nDescription:\n{50 * "-"}')
-        print(self.__df.describe(include='all'))
-        print(f'\nInfo:\n{50 * "-"}')
+        click.echo(f'\nDescription:\n{50 * "-"}')
+        click.echo(self.__df.describe(include='all'))
+        click.echo(f'\nInfo:\n{50 * "-"}')
         self.__df.info(verbose=True)
         pd.set_option('display.max_columns', def_cols)
