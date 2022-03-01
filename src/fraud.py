@@ -153,14 +153,11 @@ def generate_coroutines(data: Data) -> list:
     return coroutines
 
 
-def find_fraudulent(data: Data, export_to: str = None):
+def find_fraudulent(data: Data):
     """
     Find fraudulent transactions
     :param data: Data object
-    :param export_to: path to output file
     """
     dataframes = run(run_coroutines(data))
     for dataframe in dataframes:
         data.merge(dataframe)
-    if export_to is not None:
-        data.export(export_to, True)
