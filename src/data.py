@@ -60,6 +60,7 @@ class DataType(Enum):
     TRAIN = 1
     VALIDATION = 2
     TEST = 3
+    UNDEFINED = 4
 
 
 class Data:
