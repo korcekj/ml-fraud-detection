@@ -86,21 +86,25 @@ def fraud_detection(data_import: str, data_export: str, target: str, rows: int):
 @click.option('-ttd', '--test-data', type=click.Path(exists=True), required=True, help='Testing data file path')
 @click.option('-mi', '--module-import', type=click.Path(exists=True), help='Module file path for import')
 @click.option('-me', '--module-export', type=click.Path(), help='Module file path for export')
+@click.option('-ve', '--visuals-export', type=click.Path(), help='Visualizations dir path for export')
 @click.option('-vs', '--valid-split', type=click.FloatRange(0, 1), default=0.3, help='Validation split')
 @click.option('-bs', '--batch-size', type=click.IntRange(1, 32_768), default=32, help='Batch size')
 @click.option('-lr', '--learning-rate', type=click.FloatRange(0, 1), default=0.001, help='Learning rate')
 @click.option('-e', '--epochs', type=click.IntRange(1, 10_000), default=100, help='Batch size')
 @click.option('-t', '--target', required=True, help='Name of target column')
+@click.option('-v', '--visuals', is_flag=True, help='Show visuals')
 def neural_network(
         train_data: str,
         test_data: str,
         module_import: str,
         module_export: str,
+        visuals_export: str,
         valid_split: float,
         batch_size: int,
         learning_rate: float,
         epochs: int,
         target: str,
+        visuals: bool
 ):
     """
     Detect fraud transactions using neural network
@@ -108,11 +112,13 @@ def neural_network(
     :param test_data: path to testing data
     :param module_import: path to module for import
     :param module_export: path to module for export
-    :param target: column name
+    :param visuals_export: path to verbose directory
     :param valid_split: ratio of "valid" data
     :param batch_size: size of the batch
     :param learning_rate: learning rate
     :param epochs: number of epochs
+    :param target: column name
+    :param visuals: boolean
     """
     # Start timer
     time_start = perf_counter()
@@ -128,14 +134,18 @@ def neural_network(
 
     # Initialize model
     features_size = len(data_train.get_features())
-    model = NeuralNetwork.create(features_size, module_import)
+    model = NeuralNetwork.create(features_size, module_import).info()
 
     # Train model
     if module_import is None:
         model.fit(data_train, data_valid, batch_size, learning_rate, epochs)
+        if visuals:
+            model.visualize(DataType.TRAIN, visuals_export)
 
     # Evaluate model
     model.evaluate(data_test)
+    if visuals:
+        model.visualize(DataType.TEST, visuals_export)
 
     # Export model
     if module_export is not None:
