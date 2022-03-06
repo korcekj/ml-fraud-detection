@@ -4,13 +4,71 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from datetime import datetime
+from abc import ABC, abstractmethod
 from plotly import graph_objects as go
 from sklearn.metrics import confusion_matrix, classification_report
-from src.data import Data
+from src.data import Data, DataType
 from src.visualization import Visualization
 
 
-class NeuralNetwork(nn.Module):
+class Model(ABC):
+    """
+    An abstract class used to define the schema of each module/model
+    """
+
+    def __init__(self):
+        self.visuals = {}
+
+    @abstractmethod
+    def info(self):
+        pass
+
+    @abstractmethod
+    def load(self, file_path: str):
+        pass
+
+    @abstractmethod
+    def export(self, file_path: str, overwrite: bool):
+        pass
+
+    @abstractmethod
+    def fit(self, train_data: Data, valid_data: Data, batch_size: int, lr: float, epochs: int):
+        pass
+
+    @abstractmethod
+    def evaluate(self, test_data: Data):
+        pass
+
+    def _visualize(self, key: DataType, vis: Visualization):
+        """
+        Add Visualization object
+        :param key: type of visualization
+        :param vis: Visualization object
+        """
+        if key not in self.visuals:
+            self.visuals[key] = []
+        self.visuals[key].append(vis)
+
+    def visualize(self, key: DataType, dir_path: str):
+        """
+        Show or export Visualization object
+        :param key: type of visualization
+        :param dir_path: path to directory
+        """
+        if key not in self.visuals:
+            raise Exception('Key does not exists')
+
+        if dir_path and not os.path.isdir(dir_path):
+            raise Exception('Folder does not exist')
+
+        for index, visual in enumerate(self.visuals[key]):
+            if dir_path is None:
+                visual.show()
+            else:
+                visual.export(f'{dir_path}/{index}.{key}.{datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}.html')
+
+
+class NeuralNetwork(Model, nn.Module):
     """
     A class used to represent a Torch module/model
     """
@@ -19,6 +77,7 @@ class NeuralNetwork(nn.Module):
         """
         :param input_size: number of feature columns
         """
+        super(Model, self).__init__()
         super(NeuralNetwork, self).__init__()
         self.layer_1 = nn.Linear(input_size, 32)
         self.layer_2 = nn.Linear(32, 32)
@@ -43,6 +102,14 @@ class NeuralNetwork(nn.Module):
         if torch.cuda.is_available():
             model = model.cuda()
         return model
+
+    def info(self):
+        """
+        Get info about Torch module/model
+        :return: Module object
+        """
+        click.echo(self)
+        return self
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
@@ -208,7 +275,7 @@ class NeuralNetwork(nn.Module):
         vis.add_graph(go.Scatter(y=valid_results['loss'], name='Valid'), row=1, col=1, x_lab='Epoch', y_lab='Loss')
         vis.add_graph(go.Scatter(y=train_results['acc'], name='Train'), row=1, col=2, x_lab='Epoch', y_lab='Accuracy')
         vis.add_graph(go.Scatter(y=valid_results['acc'], name='Valid'), row=1, col=2, x_lab='Epoch', y_lab='Accuracy')
-        vis.show()
+        self._visualize(DataType.TRAIN, vis)
 
     def evaluate(self, test_data: Data):
         """
@@ -253,4 +320,4 @@ class NeuralNetwork(nn.Module):
         # Visualize confusion matrix using the Visualization class
         vis = Visualization()
         vis.add_graph(go.Heatmap(z=conf_matrix, x=[0, 1], y=[0, 1]), x_lab='Predicted', y_lab='Actual')
-        vis.show()
+        self._visualize(DataType.TEST, vis)
