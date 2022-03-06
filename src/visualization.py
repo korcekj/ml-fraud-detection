@@ -1,3 +1,4 @@
+from os.path import splitext, isfile
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -6,6 +7,7 @@ class Visualization:
     """
     A class used to represent a Graph or set of Graphs
     """
+
     def __init__(self, figure: go.Figure = None, titles: list = None, rows: int = 1, cols: int = 1):
         """
         :param figure: Figure object
@@ -31,6 +33,22 @@ class Visualization:
         Display graph in a browser
         """
         self.__figure.show()
+
+    def export(self, file_out: str, overwrite: bool = False):
+        """
+        Export the Visualization object to output file
+        :param file_out: path to output file
+        :param overwrite: boolean
+        :return: Visualization object
+        """
+        if not file_out:
+            raise Exception('Output path is missing')
+
+        if isfile(file_out) and not overwrite:
+            raise Exception('File already exists')
+
+        self.__figure.write_html(file_out)
+        return self
 
     def add_graph(self, graph, x_lab: str = '', y_lab: str = '', row: int = 1, col: int = 1):
         """
