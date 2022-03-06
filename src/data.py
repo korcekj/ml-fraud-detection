@@ -58,6 +58,9 @@ class DataType(Enum):
     """
     An enumeration used to represent type of the dataset
     """
+    def __str__(self):
+        return str(self.value)
+
     TRAIN = 1
     VALIDATION = 2
     TEST = 3
