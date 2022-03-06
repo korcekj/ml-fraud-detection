@@ -56,11 +56,13 @@ output file **:param target:** column name **:param rows:** number of rows to pi
 
 ### Neural Network
 
-Detect fraud transactions using neural network **:param train_data:** path to training data **:param test_data:** path
-to testing data **:param module_import:**
+Detect fraud transactions using neural network **:param train_data:** path to training data **:param test_data:** path to
+testing data **:param module_import:**
 path to module for import **:param module_export:** path to module for export
-**:param target:** column name **:param valid_split:** ratio of "valid" data **:param batch_size:** size of the
-batch **:param learning_rate:** learning rate **:param epochs:** number of epochs
+**:param visuals_export:** path to verbose directory **:param valid_split:** ratio of "valid" data **:param batch_size:** size of
+the batch **:param learning_rate:**
+learning rate **:param epochs:** number of epochs **:param target:** column name
+**:param visuals:** boolean
 
 ```bash
   $ ml-fraud-detection nn -tnd <dataset_train> -tts <dataset_test> -t <column_name>
@@ -72,9 +74,11 @@ batch **:param learning_rate:** learning rate **:param epochs:** number of epoch
 | `-ttd, --test-data` | `PATH`    | Testing data file path  [required] |
 | `-mi, --module-import` | `PATH` | Module file path for import |
 | `-me, --module-export` | `PATH` | Module file path for export |
+| `-ve, --visuals-export` | `PATH` | Visualizations dir path for export |
 | `-vs, --valid-split` | `FLOAT RANGE` | Validation split  [0<=x<=1] |
 | `-bs, --batch-size` | `INTEGER RANGE` | Batch size  [1<=x<=32768] |
 | `-lr, --learning-rate` | `FLOAT RANGE` | Learning rate  [0<=x<=1] |
 | `-e, --epochs` | `INTEGER RANGE` | Batch size  [1<=x<=10000] |
 | `-t, --target` | `TEXT`    | Name of target column  [required] |
+| `-v, --visuals` |  | Name of target column  [required] |
 | `--help` |           | Show this message and exit |
