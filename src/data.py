@@ -4,9 +4,8 @@ import click
 import pandas as pd
 from enum import Enum
 from typing import Union, List
-from src.utils import Singleton
+from src.utils import Scaler
 from src.visualization import Visualization
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from plotly import graph_objects as go
 from torch import FloatTensor
@@ -14,15 +13,6 @@ from torch.utils.data import Dataset, DataLoader
 from imblearn.pipeline import Pipeline
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import RandomUnderSampler
-
-
-class Scaler(StandardScaler, metaclass=Singleton):
-    """
-    A class used to represent a StandardScaler by Singleton pattern
-    """
-
-    def __init__(self):
-        super().__init__()
 
 
 class TorchDataset(Dataset):
@@ -58,6 +48,7 @@ class DataType(Enum):
     """
     An enumeration used to represent type of the dataset
     """
+
     def __str__(self):
         return str(self.value)
 
