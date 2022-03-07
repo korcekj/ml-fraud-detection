@@ -3,7 +3,7 @@ import math
 import click
 import pandas as pd
 from enum import Enum
-from typing import Union, List
+from typing import Optional, List
 from src.utils import Scaler
 from src.visualization import Visualization
 from sklearn.model_selection import train_test_split
@@ -63,7 +63,7 @@ class Data:
     A class used to represent a Pandas Dataframe with additional methods
     """
 
-    def __init__(self, file_path: Union[str, None], df: Union[pd.DataFrame, None], dt: DataType, target: str):
+    def __init__(self, file_path: Optional[str], df: Optional[pd.DataFrame], dt: DataType, target: str):
         """
         :param file_path: path to the dataset
         :param df: DataFrame object
