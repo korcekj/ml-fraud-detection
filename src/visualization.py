@@ -1,4 +1,4 @@
-from os.path import splitext, isfile
+from src.utils import IO
 from plotly import graph_objects as go
 from plotly.subplots import make_subplots
 
@@ -44,7 +44,7 @@ class Visualization:
         if not file_out:
             raise Exception('Output path is missing')
 
-        if isfile(file_out) and not overwrite:
+        if IO.is_file(file_out) and not overwrite:
             raise Exception('File already exists')
 
         self.__figure.write_html(file_out)

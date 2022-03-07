@@ -1,10 +1,9 @@
-import os
 import math
 import click
 import pandas as pd
 from enum import Enum
 from typing import Optional, List
-from src.utils import Scaler
+from src.utils import Scaler, IO
 from src.visualization import Visualization
 from sklearn.model_selection import train_test_split
 from plotly import graph_objects as go
@@ -50,7 +49,7 @@ class DataType(Enum):
     """
 
     def __str__(self):
-        return str(self.value)
+        return str(self.name)
 
     TRAIN = 1
     VALIDATION = 2
@@ -164,7 +163,7 @@ class Data:
         if not file_in:
             raise Exception('Input path is missing')
 
-        if not os.path.isfile(file_in):
+        if not IO.is_file(file_in):
             raise Exception('Input file does not exist')
 
         self.__df = pd.read_csv(file_in)
@@ -178,7 +177,7 @@ class Data:
         if not file_out:
             raise Exception('Output path is missing')
 
-        if os.path.isfile(file_out) and not overwrite:
+        if IO.is_file(file_out) and not overwrite:
             raise Exception('File already exists')
 
         self.__df.to_csv(file_out, index=False)

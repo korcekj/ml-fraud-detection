@@ -1,4 +1,3 @@
-import os
 import click
 import torch
 import torch.nn as nn
@@ -7,6 +6,7 @@ from datetime import datetime
 from abc import ABC, abstractmethod
 from plotly import graph_objects as go
 from sklearn.metrics import confusion_matrix, classification_report
+from src.utils import IO
 from src.data import Data, DataType
 from src.visualization import Visualization
 
@@ -58,14 +58,14 @@ class Model(ABC):
         if key not in self.visuals:
             raise Exception('Key does not exists')
 
-        if dir_path and not os.path.isdir(dir_path):
+        if dir_path and not IO.is_dir(dir_path):
             raise Exception('Folder does not exist')
 
-        for index, visual in enumerate(self.visuals[key]):
+        for index, visual in enumerate(self.visuals[key], 1):
             if dir_path is None:
                 visual.show()
             else:
-                visual.export(f'{dir_path}/{index}.{key}.{datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}.html')
+                visual.export(f'{dir_path}/{key}.{index}.html')
 
 
 class NeuralNetwork(Model, nn.Module):
@@ -145,7 +145,7 @@ class NeuralNetwork(Model, nn.Module):
         if not file_in:
             raise Exception('Input path is missing')
 
-        if not os.path.isfile(file_in):
+        if not IO.is_file(file_in):
             raise Exception('Input file does not exist')
 
         self.load_state_dict(torch.load(file_in))
@@ -159,7 +159,7 @@ class NeuralNetwork(Model, nn.Module):
         if not file_out:
             raise Exception('Output path is missing')
 
-        if os.path.isfile(file_out) and not overwrite:
+        if IO.is_file(file_out) and not overwrite:
             raise Exception('File already exists')
 
         torch.save(self.state_dict(), file_out)
@@ -173,14 +173,14 @@ class NeuralNetwork(Model, nn.Module):
         self.__read(file_path)
         return self
 
-    def export(self, file_path: str, overwrite: bool = False):
+    def export(self, dir_path: str, overwrite: bool = False):
         """
         Export the Torch module/model to output file
-        :param file_path: path to output file
+        :param dir_path: path to output folder
         :param overwrite: boolean
         :return: Module object
         """
-        self.__write(file_path, overwrite)
+        self.__write(f'{dir_path}/nn.model.pth', overwrite)
         return self
 
     def fit(

@@ -1,6 +1,7 @@
 import sys
 import click
-from time import perf_counter
+from time import perf_counter, time
+from src.utils import IO
 from src.data import Data, DataType
 from src.model import NeuralNetwork
 from src.fraud import find_fraudulent
@@ -122,6 +123,7 @@ def neural_network(
     """
     # Start timer
     time_start = perf_counter()
+    batch_id = str(int(time()))
 
     # Load data
     data_train, data_valid = Data.split_file(train_data, [DataType.TRAIN, DataType.VALIDATION], target, valid_split)
@@ -140,16 +142,19 @@ def neural_network(
     if module_import is None:
         model.fit(data_train, data_valid, batch_size, learning_rate, epochs)
         if visuals:
-            model.visualize(DataType.TRAIN, visuals_export)
+            dir_path = IO.create_dir(visuals_export, batch_id)
+            model.visualize(DataType.TRAIN, dir_path)
 
     # Evaluate model
     model.evaluate(data_test)
     if visuals:
-        model.visualize(DataType.TEST, visuals_export)
+        dir_path = IO.create_dir(visuals_export, batch_id)
+        model.visualize(DataType.TEST, dir_path)
 
     # Export model
     if module_export is not None:
-        model.export(module_export, True)
+        dir_path = IO.create_dir(module_export, batch_id)
+        model.export(dir_path)
 
     # Stop timer
     time_end = perf_counter()
