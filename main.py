@@ -85,8 +85,8 @@ def fraud_detection(data_import: str, data_export: str, target: str, rows: int):
 @click.option('-tnd', '--train-data', type=click.Path(exists=True), required=True, help='Training data file path')
 @click.option('-ttd', '--test-data', type=click.Path(exists=True), required=True, help='Testing data file path')
 @click.option('-mi', '--module-import', type=click.Path(exists=True), help='Module file path for import')
-@click.option('-me', '--module-export', type=click.Path(), help='Module file path for export')
-@click.option('-ve', '--visuals-export', type=click.Path(), help='Visualizations dir path for export')
+@click.option('-me', '--module-export', type=click.Path(), help='Module folder path for export')
+@click.option('-ve', '--visuals-export', type=click.Path(), help='Visualizations folder path for export')
 @click.option('-vs', '--valid-split', type=click.FloatRange(0, 1), default=0.3, help='Validation split')
 @click.option('-bs', '--batch-size', type=click.IntRange(1, 32_768), default=32, help='Batch size')
 @click.option('-lr', '--learning-rate', type=click.FloatRange(0, 1), default=0.001, help='Learning rate')
@@ -112,7 +112,7 @@ def neural_network(
     :param test_data: path to testing data
     :param module_import: path to module for import
     :param module_export: path to module for export
-    :param visuals_export: path to verbose directory
+    :param visuals_export: path to visuals folder
     :param valid_split: ratio of "valid" data
     :param batch_size: size of the batch
     :param learning_rate: learning rate
