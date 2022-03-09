@@ -80,5 +80,5 @@ learning rate **:param epochs:** number of epochs **:param target:** column name
 | `-lr, --learning-rate` | `FLOAT RANGE` | Learning rate  [0<=x<=1] |
 | `-e, --epochs` | `INTEGER RANGE` | Batch size  [1<=x<=10000] |
 | `-t, --target` | `TEXT`    | Name of target column  [required] |
-| `-v, --visuals` |  | Name of target column  [required] |
+| `-v, --visuals` |  | Show visuals |
 | `--help` |           | Show this message and exit |
