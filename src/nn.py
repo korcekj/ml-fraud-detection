@@ -16,13 +16,13 @@ class NeuralNetwork(Model, nn.Module):
     A class used to represent a Torch module/model
     """
 
-    def __init__(self, input_size: int):
+    def __init__(self, n_features: int):
         """
-        :param input_size: number of feature columns
+        :param n_features: number of feature columns
         """
         super(Model, self).__init__()
         super(NeuralNetwork, self).__init__()
-        self.layer_1 = nn.Linear(input_size, 32)
+        self.layer_1 = nn.Linear(n_features, 32)
         self.layer_2 = nn.Linear(32, 32)
         self.layer_out = nn.Linear(32, 1)
 
@@ -32,14 +32,14 @@ class NeuralNetwork(Model, nn.Module):
         self.batch_norm2 = nn.BatchNorm1d(32)
 
     @classmethod
-    def create(cls, input_size: int, file_path: str = None):
+    def create(cls, n_features: int, file_path: str = None):
         """
         Get Torch module/model
-        :param input_size: number of feature columns
+        :param n_features: number of feature columns
         :param file_path: path to input file
         :return: Module object
         """
-        model = cls(input_size)
+        model = cls(n_features)
         if file_path is not None:
             model.load(file_path)
         if torch.cuda.is_available():

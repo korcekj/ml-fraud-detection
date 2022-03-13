@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from src.utils import IO
 from src.data import Data, DataType
 from src.visualization import Visualization
 
@@ -11,6 +10,11 @@ class Model(ABC):
 
     def __init__(self):
         self.visuals = {}
+
+    @classmethod
+    @abstractmethod
+    def create(cls, n_features: int, file_path: str = None):
+        pass
 
     @abstractmethod
     def info(self):
