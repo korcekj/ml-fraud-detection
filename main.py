@@ -3,6 +3,7 @@ import click
 from time import perf_counter, time
 from src.utils import IO
 from src.nn import NeuralNetwork
+from src.dt import DecisionTree
 from src.data import Data, DataType
 from src.fraud import find_fraudulent
 
@@ -147,8 +148,97 @@ def neural_network(
 
     # Train model
     if module_import is None:
-        params = {'batch_size': batch_size, 'learning_rate': learning_rate, 'epochs': epochs}
+        params = {
+            'batch_size': batch_size,
+            'learning_rate': learning_rate,
+            'epochs': epochs
+        }
         model.fit(data_train, data_valid, params)
+        if visuals:
+            dir_path = IO.create_dir(visuals_export, batch_id)
+            model.visualize(DataType.TRAIN, dir_path)
+
+    # Evaluate model
+    model.evaluate(data_test)
+    if visuals:
+        dir_path = IO.create_dir(visuals_export, batch_id)
+        model.visualize(DataType.TEST, dir_path)
+
+    # Export model
+    if module_export is not None:
+        dir_path = IO.create_dir(module_export, batch_id)
+        model.export(dir_path)
+
+    # Stop timer
+    time_end = perf_counter()
+    # Print the number of seconds it takes for the function to run
+    click.echo(f'Task takes: {(time_end - time_start):.1f}s')
+
+
+@main.command('dt')
+@click.option('-tnd', '--train-data', type=click.Path(exists=True), required=True, help='Training data file path')
+@click.option('-ttd', '--test-data', type=click.Path(exists=True), required=True, help='Testing data file path')
+@click.option('-mi', '--module-import', type=click.Path(exists=True), help='Module file path for import')
+@click.option('-me', '--module-export', type=click.Path(), help='Module folder path for export')
+@click.option('-ve', '--visuals-export', type=click.Path(), help='Visualizations folder path for export')
+@click.option('-md', '--max-depth', type=click.INT, help='Maximum depth of the tree')
+@click.option('-ms', '--min-samples-split', type=click.INT, default=2, help='Minimum number of samples to split a node')
+@click.option('-ml', '--min-samples-leaf', type=click.INT, default=1, help='Minimum number of samples at a leaf node')
+@click.option('-c', '--criterion', type=click.Choice(['gini', 'entropy']), default='gini', help='Quality function')
+@click.option('-t', '--target', required=True, help='Name of target column')
+@click.option('-v', '--visuals', is_flag=True, help='Show visuals')
+def decision_tree(
+        train_data: str,
+        test_data: str,
+        module_import: str,
+        module_export: str,
+        visuals_export: str,
+        max_depth: int,
+        min_samples_split: int,
+        min_samples_leaf: int,
+        criterion: str,
+        target: str,
+        visuals: bool
+):
+    """
+    Detect fraud transactions using neural network
+    :param train_data: path to training data
+    :param test_data: path to testing data
+    :param module_import: path to module for import
+    :param module_export: path to module for export
+    :param visuals_export: path to visuals folder
+    :param max_depth: maximum depth of the tree
+    :param min_samples_split: minimum number of samples to split a node
+    :param min_samples_leaf: minimum number of samples at a leaf node
+    :param criterion: split quality function
+    :param target: column name
+    :param visuals: boolean
+    """
+    # Start timer
+    time_start = perf_counter()
+    batch_id = str(int(time()))
+
+    # Load data
+    data_train = Data.file(train_data, DataType.TRAIN, target)
+    data_test = Data.file(test_data, DataType.TEST, target)
+
+    # Normalize data
+    data_train.remove_null_cells().encode().normalize()
+    data_test.remove_null_cells().encode().normalize()
+
+    # Initialize model
+    n_features = len(data_train.get_features())
+    model = DecisionTree.create(n_features, module_import).info()
+
+    # Train model
+    if module_import is None:
+        params = {
+            'criterion': criterion,
+            'max_depth': max_depth,
+            'min_samples_split': min_samples_split,
+            'min_samples_leaf': min_samples_leaf
+        }
+        model.fit(data_train, None, params)
         if visuals:
             dir_path = IO.create_dir(visuals_export, batch_id)
             model.visualize(DataType.TRAIN, dir_path)
