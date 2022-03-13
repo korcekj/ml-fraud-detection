@@ -9,9 +9,7 @@ class Model(ABC):
     """
     An abstract class used to define the schema of each module/model
     """
-
-    def __init__(self):
-        self.visuals = {}
+    visuals = {}
 
     @classmethod
     @abstractmethod

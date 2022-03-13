@@ -20,8 +20,7 @@ class NeuralNetwork(Model, nn.Module):
         """
         :param n_features: number of feature columns
         """
-        super(Model, self).__init__()
-        super(NeuralNetwork, self).__init__()
+        super().__init__()
         self.layer_1 = nn.Linear(n_features, 32)
         self.layer_2 = nn.Linear(32, 32)
         self.layer_out = nn.Linear(32, 1)
