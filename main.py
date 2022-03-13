@@ -147,7 +147,8 @@ def neural_network(
 
     # Train model
     if module_import is None:
-        model.fit(data_train, data_valid, {'batch_size': batch_size, 'learning_rate': learning_rate, 'epochs': epochs})
+        params = {'batch_size': batch_size, 'learning_rate': learning_rate, 'epochs': epochs}
+        model.fit(data_train, data_valid, params)
         if visuals:
             dir_path = IO.create_dir(visuals_export, batch_id)
             model.visualize(DataType.TRAIN, dir_path)
