@@ -1,7 +1,7 @@
 from typing import Union
 from abc import ABC, abstractmethod
 from src.data import Data, DataType
-from matplotlib.pyplot import Figure
+from matplotlib.figure import Figure
 from src.visualization import Visualization
 
 
