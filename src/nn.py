@@ -54,6 +54,24 @@ class NeuralNetwork(Model, nn.Module):
         click.echo(self)
         return self
 
+    def visualize(self, key: DataType, dir_path: str):
+        """
+        Show or export Visualization object
+        :param key: type of visualization
+        :param dir_path: path to directory
+        """
+        if key not in self.visuals:
+            raise Exception('Key does not exists')
+
+        if dir_path and not IO.is_dir(dir_path):
+            raise Exception('Folder does not exist')
+
+        for index, visual in enumerate(self.visuals[key], 1):
+            if dir_path is None:
+                visual.show()
+            else:
+                visual.export(f'{dir_path}/{key}.{index}.html')
+
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
         :param inputs: feature row of values
