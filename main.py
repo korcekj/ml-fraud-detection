@@ -2,8 +2,8 @@ import sys
 import click
 from time import perf_counter, time
 from src.utils import IO
+from src.nn import NeuralNetwork
 from src.data import Data, DataType
-from src.model import NeuralNetwork
 from src.fraud import find_fraudulent
 
 
