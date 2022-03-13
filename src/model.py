@@ -25,7 +25,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def export(self, file_path: str, overwrite: bool):
+    def export(self, dir_path: str, overwrite: bool):
         pass
 
     @abstractmethod
