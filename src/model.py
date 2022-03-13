@@ -32,6 +32,7 @@ class Model(ABC):
     def evaluate(self, test_data: Data):
         pass
 
+    @abstractmethod
     def visualize(self, key: DataType, dir_path: str):
         pass
 
