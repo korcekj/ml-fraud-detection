@@ -82,3 +82,33 @@ learning rate **:param epochs:** number of epochs **:param target:** column name
 | `-t, --target` | `TEXT`    | Name of target column  [required] |
 | `-v, --visuals` |  | Show visuals |
 | `--help` |           | Show this message and exit |
+
+### Decision Tree
+
+Detect fraud transactions using decision tree **:param train_data:** path to training data **:param test_data:** path to
+testing data **:param module_import:**
+path to module for import **:param module_export:** path to module for export
+**:param visuals_export:** path to visuals folder **:param max_depth:** maximum depth of the tree **:param
+min_samples_split:**
+minimum number of samples to split a node **:param min_samples_leaf:** minimum number of samples at a leaf node **:param
+criterion:** split quality function **:param target:** column name
+**:param visuals:** boolean
+
+```bash
+  $ ml-fraud-detection dt -tnd <dataset_train> -tts <dataset_test> -t <column_name>
+```
+
+| Parameter               | Type                           | Description                               |
+|:---------------------|:-------------------------------|:------------------------------------------|
+| `-tnd, --train-data` | `PATH`                         | Training data file path  [required]       |
+| `-ttd, --test-data` | `PATH`                         | Testing data file path  [required]        |
+| `-mi, --module-import` | `PATH`                         | Module file path for import               |
+| `-me, --module-export` | `PATH`                         | Module folder path for export             |
+| `-ve, --visuals-export` | `PATH`                         | Visualizations dir path for export        |
+| `-md, --max-depth` | `INTEGER`                      | Maximum depth of the tree                 |
+| `-ms, --min-samples-split` | `INTEGER`                      | Minimum number of samples to split a node |
+| `-ml, --min-samples-leaf` | `INTEGER`                      | Minimum number of samples at a leaf node  |
+| `-c, --criterion` | <code>gini&vert;entropy</code> | Quality function |
+| `-t, --target` | `TEXT`                         | Name of target column  [required]         |
+| `-v, --visuals` |                                | Show visuals                              |
+| `--help` |                                | Show this message and exit                |

@@ -109,7 +109,7 @@ def neural_network(
         visuals: bool
 ):
     """
-    Detect fraud transactions using neural network
+    Detect fraud transactions using decision tree
     :param train_data: path to training data
     :param test_data: path to testing data
     :param module_import: path to module for import
