@@ -126,21 +126,28 @@ def neural_network(
     batch_id = str(int(time()))
 
     # Load data
-    data_train, data_valid = Data.split_file(train_data, [DataType.TRAIN, DataType.VALIDATION], target, valid_split)
+    data_train = Data.file(train_data, DataType.TRAIN, target)
     data_test = Data.file(test_data, DataType.TEST, target)
 
     # Normalize data
     data_train.remove_null_cells().encode().normalize()
-    data_valid.remove_null_cells().encode().normalize()
     data_test.remove_null_cells().encode().normalize()
 
+    # Split data
+    data_train, data_valid = Data.split_dataframe(
+        data_train.get_df(),
+        [DataType.TRAIN, DataType.VALIDATION],
+        target,
+        valid_split
+    )
+
     # Initialize model
-    features_size = len(data_train.get_features())
-    model = NeuralNetwork.create(features_size, module_import).info()
+    n_features = len(data_train.get_features())
+    model = NeuralNetwork.create(n_features, module_import).info()
 
     # Train model
     if module_import is None:
-        model.fit(data_train, data_valid, batch_size, learning_rate, epochs)
+        model.fit(data_train, data_valid, {'batch_size': batch_size, 'learning_rate': learning_rate, 'epochs': epochs})
         if visuals:
             dir_path = IO.create_dir(visuals_export, batch_id)
             model.visualize(DataType.TRAIN, dir_path)

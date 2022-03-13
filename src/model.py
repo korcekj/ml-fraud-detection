@@ -29,7 +29,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def fit(self, train_data: Data, valid_data: Data, batch_size: int, lr: float, epochs: int):
+    def fit(self, train_data: Data, valid_data: Data, params: dict):
         pass
 
     @abstractmethod

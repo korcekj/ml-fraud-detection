@@ -144,34 +144,25 @@ class NeuralNetwork(Model, nn.Module):
         self.__write(f'{dir_path}/nn.model.pth', overwrite)
         return self
 
-    def fit(
-            self,
-            train_data: Data,
-            valid_data: Data,
-            batch_size: int = 32,
-            lr: float = 0.001,
-            epochs: int = 1,
-    ):
+    def fit(self, train_data: Data, valid_data: Data, params: dict):
         """
         Train Torch module/model
         :param train_data: Pandas training dataframe
         :param valid_data: Pandas validation dataframe
-        :param batch_size: size of the batch as a number
-        :param lr: learning rate
-        :param epochs: number of epochs
+        :param params: size of the batch as a number
         """
         # Apply Binary Cross Entropy criterion function between the target and the input probabilities
         criterion = nn.BCELoss()
         # Use Adam optimizer
-        optimizer = optim.Adam(self.parameters(), lr=lr)
+        optimizer = optim.Adam(self.parameters(), lr=params['learning_rate'])
         # Initialize data loaders
-        train_dl = train_data.get_dataloader(batch_size=batch_size, shuffle=True)
+        train_dl = train_data.get_dataloader(batch_size=params['batch_size'], shuffle=True)
         valid_dl = valid_data.get_dataloader(batch_size=1)
         # Initialize result dictionaries
         train_results = {'loss': [], 'acc': []}
         valid_results = {'loss': [], 'acc': []}
         # Iterate over each epoch
-        for epoch in range(1, epochs + 1):
+        for epoch in range(1, params['epochs'] + 1):
             # Enable training mode
             self.train()
             train_loss = 0
