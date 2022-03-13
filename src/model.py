@@ -1,5 +1,7 @@
+from typing import Union
 from abc import ABC, abstractmethod
 from src.data import Data, DataType
+from matplotlib.pyplot import Figure
 from src.visualization import Visualization
 
 
@@ -40,7 +42,7 @@ class Model(ABC):
     def visualize(self, key: DataType, dir_path: str):
         pass
 
-    def _visualize(self, key: DataType, vis: Visualization):
+    def _visualize(self, key: DataType, vis: Union[Visualization, Figure]):
         """
         Add Visualization object
         :param key: type of visualization
