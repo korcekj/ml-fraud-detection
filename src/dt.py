@@ -1,11 +1,10 @@
 import click
 import joblib
-import matplotlib.pyplot as plt
 from datetime import datetime
 from plotly import graph_objects as go
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix, classification_report
-from src.visualization import Visualization
+from src.visualization import PlotlyVis, TreeVis
 from src.data import Data, DataType
 from src.model import Model
 from src.utils import IO
@@ -41,27 +40,6 @@ class DecisionTree(Model):
         click.echo(self.__model)
         click.echo(self.__model.get_params())
         return self
-
-    def visualize(self, key: DataType, dir_path: str):
-        """
-        Show or export Tree object
-        :param key: type of visualization
-        :param dir_path: path to directory
-        """
-        if key not in self.visuals:
-            raise Exception('Key does not exists')
-
-        if dir_path and not IO.is_dir(dir_path):
-            raise Exception('Folder does not exist')
-
-        for index, visual in enumerate(self.visuals[key], 1):
-            if dir_path is None:
-                visual.show()
-            else:
-                try:
-                    visual.savefig(f'{dir_path}/{key}.{index}.png')
-                except AttributeError:
-                    visual.export(f'{dir_path}/{key}.{index}.html')
 
     def __read(self, file_in: str):
         """
@@ -126,8 +104,8 @@ class DecisionTree(Model):
         )
 
         # Visualize training results using the matplotlib library
-        vis = plt.figure(figsize=(25, 20))
-        plot_tree(self.__model, filled=True)
+        vis = TreeVis()
+        vis.set_tree(self.__model)
         self._visualize(DataType.TRAIN, vis)
 
     def evaluate(self, test_data: Data):
@@ -143,6 +121,6 @@ class DecisionTree(Model):
         click.echo(f'\n{class_report}')
 
         # Visualize confusion matrix using the Visualization class
-        vis = Visualization()
+        vis = PlotlyVis()
         vis.add_graph(go.Heatmap(z=conf_matrix, x=[0, 1], y=[0, 1]), x_lab='Predicted', y_lab='Actual')
         self._visualize(DataType.TEST, vis)

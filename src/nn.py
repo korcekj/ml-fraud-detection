@@ -8,7 +8,7 @@ from sklearn.metrics import confusion_matrix, classification_report
 from src.utils import IO
 from src.model import Model
 from src.data import Data, DataType
-from src.visualization import Visualization
+from src.visualization import PlotlyVis
 
 
 class NeuralNetwork(Model, nn.Module):
@@ -52,24 +52,6 @@ class NeuralNetwork(Model, nn.Module):
         """
         click.echo(self)
         return self
-
-    def visualize(self, key: DataType, dir_path: str):
-        """
-        Show or export Visualization object
-        :param key: type of visualization
-        :param dir_path: path to directory
-        """
-        if key not in self.visuals:
-            raise Exception('Key does not exists')
-
-        if dir_path and not IO.is_dir(dir_path):
-            raise Exception('Folder does not exist')
-
-        for index, visual in enumerate(self.visuals[key], 1):
-            if dir_path is None:
-                visual.show()
-            else:
-                visual.export(f'{dir_path}/{key}.{index}.html')
 
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
@@ -221,7 +203,7 @@ class NeuralNetwork(Model, nn.Module):
             )
 
         # Visualize average losses and accuracies using the Visualization class
-        vis = Visualization(rows=1, cols=2)
+        vis = PlotlyVis(rows=1, cols=2)
         vis.add_graph(go.Scatter(y=train_results['loss'], name='Train'), row=1, col=1, x_lab='Epoch', y_lab='Loss')
         vis.add_graph(go.Scatter(y=valid_results['loss'], name='Valid'), row=1, col=1, x_lab='Epoch', y_lab='Loss')
         vis.add_graph(go.Scatter(y=train_results['acc'], name='Train'), row=1, col=2, x_lab='Epoch', y_lab='Accuracy')
@@ -269,6 +251,6 @@ class NeuralNetwork(Model, nn.Module):
         click.echo(f'\n{class_report}')
 
         # Visualize confusion matrix using the Visualization class
-        vis = Visualization()
+        vis = PlotlyVis()
         vis.add_graph(go.Heatmap(z=conf_matrix, x=[0, 1], y=[0, 1]), x_lab='Predicted', y_lab='Actual')
         self._visualize(DataType.TEST, vis)

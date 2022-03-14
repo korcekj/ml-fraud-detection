@@ -4,7 +4,7 @@ import pandas as pd
 from enum import Enum
 from typing import Optional, List
 from src.utils import Scaler, IO
-from src.visualization import Visualization
+from src.visualization import PlotlyVis
 from sklearn.model_selection import train_test_split
 from plotly import graph_objects as go
 from torch import FloatTensor
@@ -361,7 +361,7 @@ class Data:
         """
         cols = 3
         rows = math.ceil(len(self.get_features(True)) / cols)
-        vis = Visualization(titles=list(self.get_features(True)), rows=rows, cols=cols)
+        vis = PlotlyVis(titles=list(self.get_features(True)), rows=rows, cols=cols)
         col, row = 1, 1
         for column in self.get_features(True):
             if col > cols:
@@ -375,7 +375,7 @@ class Data:
         """
         Visualize correlation with the dataset using the Visualization class
         """
-        vis = Visualization()
+        vis = PlotlyVis()
         new_df = self.__df.corr()
         vis.add_graph(go.Heatmap(z=new_df, x=new_df.columns, y=new_df.columns))
         vis.show()
@@ -384,7 +384,7 @@ class Data:
         """
         Visualize target ratio using the Visualization class
         """
-        vis = Visualization(titles=['Number of frauds'])
+        vis = PlotlyVis(titles=['Number of frauds'])
         new_df = self.__df[self.__target]
         vis.add_graph(go.Bar(x=new_df.unique(), y=new_df.value_counts().values), x_lab='is_fraud', y_lab='count')
         vis.show()
