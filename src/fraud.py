@@ -107,10 +107,11 @@ async def validate_transaction(transaction: Series) -> int:
         click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Transaction [{transaction["trans_num"]}]: {e}', err=True)
 
 
-async def process_transactions(transactions: DataFrame, index: int, total: int) -> DataFrame:
+async def process_transactions(transactions: DataFrame, target: str, index: int, total: int) -> DataFrame:
     """
     Process the transactions DataFrame (asynchronously)
     :param transactions: transactions DataFrame
+    :param target: column name
     :param index: transactions batch index
     :param total: total number of transactions
     :return: DataFrame object
@@ -122,7 +123,9 @@ async def process_transactions(transactions: DataFrame, index: int, total: int) 
     click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Card [{transactions["cc_num"].values[0]}]: Start')
     for row, transaction in transactions.iterrows():
         click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Transaction [{transaction["trans_num"]}]: Start')
-        transactions.loc[row, 'is_fraud_check'] = await validate_transaction(transaction)
+        prev_is_fraud = transactions.loc[row, target]
+        is_fraud = await validate_transaction(transaction)
+        transactions.loc[row, target] = prev_is_fraud if not is_fraud and prev_is_fraud else is_fraud
         click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Transaction [{transaction["trans_num"]}]: End')
     click.echo(f'[{datetime.now().strftime("%H:%M:%S")}] Card [{transactions["cc_num"].values[0]}]: End')
     click.echo(f'--------------------{(index / total) * 100:.2f}%--------------------')
@@ -147,9 +150,10 @@ def generate_coroutines(data: Data) -> list:
     """
     coroutines = []
     cards = data.get_df()['cc_num'].unique()
+    target = data.get_target()
     for i, card in enumerate(cards):
         transactions = data.get_df().loc[data.get_df()['cc_num'] == card]
-        coroutines.append(process_transactions(transactions, i + 1, len(cards)))
+        coroutines.append(process_transactions(transactions, target, i + 1, len(cards)))
     return coroutines
 
 
@@ -158,6 +162,4 @@ def find_fraudulent(data: Data):
     Find fraudulent transactions
     :param data: Data object
     """
-    dataframes = run(run_coroutines(data))
-    for dataframe in dataframes:
-        data.merge(dataframe)
+    run(run_coroutines(data))
