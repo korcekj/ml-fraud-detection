@@ -1,12 +1,12 @@
 import math
 import click
 import pandas as pd
+import seaborn as sns
 from enum import Enum
 from typing import Optional, List
 from src.utils import Scaler, IO
-from src.visualization import PlotlyVis
+from src.visualization import Visualization, MatPlotVis
 from sklearn.model_selection import train_test_split
-from plotly import graph_objects as go
 from torch import FloatTensor
 from torch.utils.data import Dataset, DataLoader
 from imblearn.pipeline import Pipeline
@@ -57,7 +57,7 @@ class DataType(Enum):
     UNDEFINED = 4
 
 
-class Data:
+class Data(Visualization):
     """
     A class used to represent a Pandas Dataframe with additional methods
     """
@@ -69,6 +69,7 @@ class Data:
         :param dt: data type of the dataset
         :param target: column name
         """
+        super().__init__()
         self.__file_path = file_path
         self.__df = df
         self.__dt = dt
@@ -265,7 +266,7 @@ class Data:
         :param under_strategy: ratio of under-sampled data
         :return: Data object
         """
-        target = self.get_target()
+        target = self.__target
         columns = self.get_features()
         over_sampler = SMOTE(sampling_strategy=over_strategy)
         under_sampler = RandomUnderSampler(sampling_strategy=under_strategy)
@@ -357,39 +358,48 @@ class Data:
 
     def vis_outliers(self):
         """
-        Visualize outliers using the Visualization class
+        Visualize outliers using the Visual class
         """
         cols = 3
         rows = math.ceil(len(self.get_features(True)) / cols)
-        vis = PlotlyVis(titles=list(self.get_features(True)), rows=rows, cols=cols)
-        col, row = 1, 1
-        for column in self.get_features(True):
-            if col > cols:
-                row += 1
-                col = 1
-            vis.add_graph(go.Box(y=self.__df[column], name=column), row=row, col=col)
-            col += 1
-        vis.get_figure().update_layout(height=rows * 500, showlegend=False).show()
+        sns.set_theme()
+        vis = MatPlotVis('outliers', rows=rows, cols=cols)
+        for index, column in enumerate(self.get_features(True), 1):
+            vis.add_graph(
+                lambda ax: sns.boxplot(x=self.__df[column], ax=ax),
+                x_lab=column,
+                position=index
+            )
+        self._visualize(vis)
+        return self
 
     def vis_correlation(self):
         """
-        Visualize correlation with the dataset using the Visualization class
+        Visualize correlation with the dataset using the Visual class
         """
-        vis = PlotlyVis()
-        new_df = self.__df.corr()
-        vis.add_graph(go.Heatmap(z=new_df, x=new_df.columns, y=new_df.columns))
-        vis.show()
+        data = self.__df.corr()
+        sns.set_theme()
+        vis = MatPlotVis('correlation')
+        vis.add_graph(lambda ax: sns.heatmap(data=data, ax=ax, annot=True, fmt='.1f', linewidths=.5))
+        self._visualize(vis)
+        return self
 
     def vis_target(self):
         """
-        Visualize target ratio using the Visualization class
+        Visualize target ratio using the Visual class
         """
-        vis = PlotlyVis(titles=['Number of frauds'])
-        new_df = self.__df[self.__target]
-        vis.add_graph(go.Bar(x=new_df.unique(), y=new_df.value_counts().values), x_lab='is_fraud', y_lab='count')
-        vis.show()
+        data = self.__df.groupby(self.__target)[self.__target].count().to_frame()
+        sns.set_theme()
+        vis = MatPlotVis('target')
+        vis.add_graph(
+            lambda ax: sns.barplot(x=data.index, y=self.__target, data=data, ax=ax),
+            x_lab=self.__target,
+            y_lab='count'
+        )
+        self._visualize(vis)
+        return self
 
-    def print(self):
+    def info(self):
         """
         Print statistics about the dataset
         """
@@ -400,3 +410,4 @@ class Data:
         click.echo(f'\nInfo:\n{50 * "-"}')
         self.__df.info(verbose=True)
         pd.set_option('display.max_columns', def_cols)
+        return self
