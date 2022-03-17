@@ -1,16 +1,17 @@
 import click
 import joblib
+import numpy as np
+import seaborn as sns
 from datetime import datetime
-from plotly import graph_objects as go
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix, classification_report
-from src.visualization import PlotlyVis, TreeVis
-from src.data import Data, DataType
+from src.visualization import Visualization, TreeVis, MatPlotVis
+from src.data import Data
 from src.model import Model
 from src.utils import IO
 
 
-class DecisionTree(Model):
+class DecisionTree(Model, Visualization):
     """
     A class used to represent a Scikit module/model
     """
@@ -91,8 +92,8 @@ class DecisionTree(Model):
         # Set model parameters
         self.__model.set_params(**params)
         # Prepare input and target data
-        inputs = train_data.get_df()[train_data.get_features()]
-        targets = train_data.get_df()[train_data.get_target()].values
+        inputs = train_data.df[train_data.features]
+        targets = train_data.df[train_data.target].values
         # Train the model
         self.__model.fit(inputs, targets)
         # Get training accuracy
@@ -104,23 +105,26 @@ class DecisionTree(Model):
         )
 
         # Visualize training results using the matplotlib library
-        vis = TreeVis()
-        vis.set_tree(self.__model)
-        self._visualize(DataType.TRAIN, vis)
+        vis = TreeVis('decision_tree_train', tree=self.__model)
+        self._visualize(vis)
 
     def evaluate(self, test_data: Data):
         # Prepare input and target data
-        inputs = test_data.get_df()[test_data.get_features()]
-        targets = test_data.get_df()[test_data.get_target()].values
+        inputs = test_data.df[test_data.features]
+        targets = test_data.df[test_data.target].values
         # Predict targets
         targets_predicted = self.__model.predict(inputs)
         # Classification report
         conf_matrix = confusion_matrix(targets, targets_predicted)
+        conf_matrix = conf_matrix / np.sum(conf_matrix)
         class_report = classification_report(targets, targets_predicted)
 
         click.echo(f'\n{class_report}')
 
-        # Visualize confusion matrix using the Visualization class
-        vis = PlotlyVis()
-        vis.add_graph(go.Heatmap(z=conf_matrix, x=[0, 1], y=[0, 1]), x_lab='Predicted', y_lab='Actual')
-        self._visualize(DataType.TEST, vis)
+        sns.set_theme()
+        vis = MatPlotVis('decision_tree_test')
+        vis.add_graph(
+            lambda ax: sns.heatmap(data=conf_matrix, ax=ax, annot=True, cbar=False, fmt='.2%', linewidths=.5),
+        )
+        self._visualize(vis)
+        return self

@@ -136,14 +136,22 @@ def neural_network(
 
     # Split data
     data_train, data_valid = Data.split_dataframe(
-        data_train.get_df(),
+        data_train.df,
         [DataType.TRAIN, DataType.VALIDATION],
         target,
         valid_split
     )
 
+    # Visualize dataset
+    if visuals:
+        dir_path = IO.create_dir(visuals_export, batch_id)
+        data_train.vis_target().vis_outliers().vis_correlation()
+        data_train.visualize(dir_path)
+        data_test.vis_target().vis_outliers().vis_correlation()
+        data_test.visualize(dir_path)
+
     # Initialize model
-    n_features = len(data_train.get_features())
+    n_features = len(data_train.features)
     model = NeuralNetwork.create(n_features, module_import).info()
 
     # Train model
@@ -156,13 +164,13 @@ def neural_network(
         model.fit(data_train, data_valid, params)
         if visuals:
             dir_path = IO.create_dir(visuals_export, batch_id)
-            model.visualize(DataType.TRAIN, dir_path)
+            model.visualize(dir_path)
 
     # Evaluate model
     model.evaluate(data_test)
     if visuals:
         dir_path = IO.create_dir(visuals_export, batch_id)
-        model.visualize(DataType.TEST, dir_path)
+        model.visualize(dir_path)
 
     # Export model
     if module_export is not None:
@@ -201,7 +209,7 @@ def decision_tree(
         visuals: bool
 ):
     """
-    Detect fraud transactions using neural network
+    Detect fraud transactions using decision tree
     :param train_data: path to training data
     :param test_data: path to testing data
     :param module_import: path to module for import
@@ -223,11 +231,19 @@ def decision_tree(
     data_test = Data.file(test_data, DataType.TEST, target)
 
     # Normalize data
-    data_train.remove_null_cells().encode().normalize()
-    data_test.remove_null_cells().encode().normalize()
+    data_train.remove_null_cells().encode()
+    data_test.remove_null_cells().encode()
+
+    # Visualize dataset
+    if visuals:
+        dir_path = IO.create_dir(visuals_export, batch_id)
+        data_train.vis_target().vis_outliers().vis_correlation()
+        data_train.visualize(dir_path)
+        data_test.vis_target().vis_outliers().vis_correlation()
+        data_test.visualize(dir_path)
 
     # Initialize model
-    n_features = len(data_train.get_features())
+    n_features = len(data_train.features)
     model = DecisionTree.create(n_features, module_import).info()
 
     # Train model
@@ -241,13 +257,13 @@ def decision_tree(
         model.fit(data_train, None, params)
         if visuals:
             dir_path = IO.create_dir(visuals_export, batch_id)
-            model.visualize(DataType.TRAIN, dir_path)
+            model.visualize(dir_path)
 
     # Evaluate model
     model.evaluate(data_test)
     if visuals:
         dir_path = IO.create_dir(visuals_export, batch_id)
-        model.visualize(DataType.TEST, dir_path)
+        model.visualize(dir_path)
 
     # Export model
     if module_export is not None:
