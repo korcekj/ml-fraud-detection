@@ -1,16 +1,16 @@
 from graphviz import Source
-from src.utils import IO
+from src.utils import IO, Counter
 from abc import ABC, abstractmethod
 from matplotlib import pyplot as plt
-from matplotlib.figure import Figure as MatFigure
-from sklearn.tree import plot_tree, export_graphviz, BaseDecisionTree
-from plotly.graph_objects import Figure as PltFigure
+from matplotlib.figure import Figure as MatPlotFigure
+from sklearn.tree import export_graphviz, BaseDecisionTree
+from plotly.graph_objects import Figure as PlotlyFigure
 from plotly.subplots import make_subplots
 
 
-class Visualization(ABC):
+class Visual(ABC):
     """
-    A class used to represent a visualization process
+    A class used to represent a Visual object
     """
 
     @abstractmethod
@@ -21,35 +21,133 @@ class Visualization(ABC):
     def export(self, file_out: str, overwrite: bool):
         pass
 
+    @property
+    @abstractmethod
+    def name(self):
+        pass
 
-class PlotlyVis(Visualization):
+
+class Visualization:
+    """
+    A class used to represent a visualization process
+    """
+
+    def __init__(self):
+        self.__visuals = []
+
+    def visualize(self, dir_path: str, index: int = -1):
+        """
+        Show or export Visualization object
+        :param dir_path: path to directory
+        :param index: index of the visual
+        """
+        if dir_path and not IO.is_dir(dir_path):
+            raise Exception('Folder does not exist')
+
+        vis_list = self.__visuals
+        if index > -1:
+            vis_list = [self.__visuals[index]]
+
+        for visual in vis_list:
+            if dir_path is None:
+                visual.show()
+            else:
+                visual.export(f'{dir_path}/{visual.name}.{Counter.next()}')
+
+    def _visualize(self, vis: Visual):
+        """
+        Add Visualization object
+        :param vis: Visualization object
+        """
+        self.__visuals.append(vis)
+
+
+class MatPlotVis(Visual):
     """
     A class used to visualize a Graph object
     """
 
-    def __init__(self, figure: PltFigure = None, titles: list = None, rows: int = 1, cols: int = 1):
-        """
-        :param figure: Figure object
-        :param titles: list of graph titles
-        :param rows: number of rows
-        :param cols: number of columns
-        """
-        self.__figure = figure
+    def __init__(self, name: str, fig_size: (float, float) = None, rows: int = 1, cols: int = 1):
+        self.__name = name
         self.__rows = rows
         self.__cols = cols
-        self.__titles = titles
-        self.__load()
-
-    def __load(self):
-        """
-        Initiate graph by creating a layout
-        """
-        if self.__figure is None:
-            self.__figure = make_subplots(rows=self.__rows, cols=self.__cols, subplot_titles=self.__titles)
+        self.__fig_size = fig_size
+        self.__figure = plt.figure(figsize=self.__fig_size)
 
     def show(self):
         """
         Display the graph
+        :return MatPlotVis object
+        """
+        self.__figure.tight_layout()
+        self.__figure.show()
+        return self.__figure
+
+    def export(self, file_out: str, overwrite: bool = False):
+        """
+        Export the MatPlotVis object to output file
+        :param file_out: path to output file
+        :param overwrite: boolean
+        :return: MatPlotVis object
+        """
+        if not file_out:
+            raise Exception('Output path is missing')
+
+        if IO.is_file(file_out) and not overwrite:
+            raise Exception('File already exists')
+
+        self.__figure.savefig(f'{file_out}.png')
+        return self
+
+    def add_graph(self, graph, x_lab: str = '', y_lab: str = '', position: int = 1):
+        ax = self.__figure.add_subplot(self.__rows, self.__cols, position)
+        ax = graph(ax)
+        ax.set_xlabel(x_lab)
+        ax.set_ylabel(y_lab)
+        return ax
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def figure(self):
+        """
+        Get figure property
+        :return: Figure object
+        """
+        return self.__figure
+
+    @figure.setter
+    def figure(self, figure: MatPlotFigure):
+        """
+        Set figure property
+        :param figure: Figure object
+        """
+        self.__figure = figure
+
+
+class PlotlyVis(Visual):
+    """
+    A class used to visualize a Graph object
+    """
+
+    def __init__(self, name: str, titles: list = None, rows: int = 1, cols: int = 1):
+        """
+        :param titles: list of graph titles
+        :param rows: number of rows
+        :param cols: number of columns
+        """
+        self.__name = name
+        self.__rows = rows
+        self.__cols = cols
+        self.__titles = titles
+        self.__figure = make_subplots(rows=self.__rows, cols=self.__cols, subplot_titles=self.__titles)
+
+    def show(self):
+        """
+        Display the graph
+        :return PlotlyVis object
         """
         self.__figure.show()
         return self
@@ -85,29 +183,34 @@ class PlotlyVis(Visualization):
         self.__figure.update_yaxes(title_text=y_lab, row=row, col=col)
         return self
 
-    def get_figure(self):
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def figure(self):
         """
         Get figure property
         :return: Figure object
         """
         return self.__figure
 
-    def set_figure(self, figure: PltFigure):
+    @figure.setter
+    def figure(self, figure: PlotlyFigure):
         """
         Set figure property
         :param figure: Figure object
-        :return: PlotlyVis object
         """
         self.__figure = figure
-        return self
 
 
-class TreeVis(Visualization):
+class TreeVis(Visual):
     """
     A class used to visualize a BaseDecisionTree object
     """
 
-    def __init__(self, tree: BaseDecisionTree = None):
+    def __init__(self, name: str, tree: BaseDecisionTree = None):
+        self.__name = name
         self.__tree = tree
 
     def show(self):
@@ -134,11 +237,18 @@ class TreeVis(Visualization):
         graph.render(file_out, cleanup=True)
         return self
 
-    def set_tree(self, tree: BaseDecisionTree):
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def tree(self):
+        return self.__tree
+
+    @tree.setter
+    def tree(self, tree: BaseDecisionTree):
         """
         Set tree property
         :param tree: BaseDecisionTree object
-        :return: TreeVis object
         """
         self.__tree = tree
-        return self
