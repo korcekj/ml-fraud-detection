@@ -105,8 +105,8 @@ class Data(Visualization):
         """
         data_1 = cls(file_path, None, dts[0], target)
         data_1.load(rows)
-        df_1, df_2 = train_test_split(data_1.get_df(), test_size=split_ratio, random_state=42)
-        data_1.set_df(df_1)
+        df_1, df_2 = train_test_split(data_1.df, test_size=split_ratio, random_state=42)
+        data_1.df = df_1
         data_2 = cls(None, df_2, dts[1], target)
         return data_1, data_2
 
@@ -246,11 +246,11 @@ class Data(Visualization):
         Normalize feature columns in the dataset using a Scaler
         :return: Data object
         """
-        if self.__target is None:
+        if self.target is None:
             raise Exception('Target is missing')
 
         scaler = Scaler()
-        columns = self.get_features()
+        columns = self.features
 
         if self.__dt == DataType.TRAIN:
             scaler.fit(self.__df[columns])
@@ -266,8 +266,8 @@ class Data(Visualization):
         :param under_strategy: ratio of under-sampled data
         :return: Data object
         """
-        target = self.__target
-        columns = self.get_features()
+        target = self.target
+        columns = self.features
         over_sampler = SMOTE(sampling_strategy=over_strategy)
         under_sampler = RandomUnderSampler(sampling_strategy=under_strategy)
         steps = [('o', over_sampler), ('u', under_sampler)]
@@ -278,18 +278,6 @@ class Data(Visualization):
         self.__df[target] = pd.DataFrame(y_balanced, columns=[target])
         return self
 
-    def get_dataset(self) -> Dataset:
-        """
-        Get a Torch dataset instance
-        :return: TorchDataset object
-        """
-        if self.__target is None:
-            raise Exception('Target is missing')
-        return TorchDataset(
-            x_data=FloatTensor(self.__df[self.get_features()].values),
-            y_data=FloatTensor(self.__df[self.__target].values)
-        )
-
     def get_dataloader(self, batch_size: int = 32, shuffle: bool = False) -> DataLoader:
         """
         Get a Torch dataloader instance
@@ -297,59 +285,83 @@ class Data(Visualization):
         :param shuffle: boolean
         :return: DataLoader object
         """
-        if self.__target is None:
+        if self.target is None:
             raise Exception('Target is missing')
         dataset = self.get_dataset()
         return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
 
-    def get_features(self, target: bool = False) -> list:
+    def get_dataset(self) -> Dataset:
         """
-        Get feature columns
-        :param target: boolean
-        :return: list of columns
+        Get a Torch dataset instance
+        :return: TorchDataset object
         """
-        if target:
-            return list(self.__df.columns)
-        if self.__target is None:
+        if self.target is None:
             raise Exception('Target is missing')
-        return [column for column in self.__df.columns if column != self.__target]
+        return TorchDataset(
+            x_data=FloatTensor(self.__df[self.features].values),
+            y_data=FloatTensor(self.__df[self.target].values)
+        )
 
-    def get_df(self) -> pd.DataFrame:
+    @property
+    def df(self) -> pd.DataFrame:
         """
         Get Pandas dataframe property
         :return: DataFrame object
         """
         return self.__df
 
-    def set_df(self, df: pd.DataFrame):
+    @df.setter
+    def df(self, df: pd.DataFrame):
         """
         Set Pandas dataframe property
         :param df: DataFrame object
         """
         self.__df = df
 
-    def get_target(self) -> str:
+    @property
+    def columns(self):
+        """
+        Get DataFrame columns
+        :return: list of columns
+        """
+        return self.df.columns
+
+    @property
+    def features(self) -> list:
+        """
+        Get feature columns
+        :return: list of columns
+        """
+        if self.target is None:
+            raise Exception('Target is missing')
+        return [column for column in self.__df.columns if column != self.target]
+
+    @property
+    def target(self) -> str:
         """
         Get target property
         :return: column name
         """
         return self.__target
 
-    def set_target(self, target: str):
+    @target.setter
+    def target(self, target: str):
         """
         Set target property
         :param target: column name
         """
-        self.__target = target
+        self.target = target
 
-    def get_type(self) -> DataType:
+    @property
+    def type(self) -> DataType:
         """
         Get data type property
         :return: type of the dataset
         """
         return self.__dt
 
-    def set_type(self, dt: DataType):
+    @type.setter
+    def type(self, dt: DataType):
         """
         Set data type property
         :param dt: DataType object
@@ -361,10 +373,10 @@ class Data(Visualization):
         Visualize outliers using the Visual class
         """
         cols = 3
-        rows = math.ceil(len(self.get_features(True)) / cols)
+        rows = math.ceil(len(self.columns) / cols)
         sns.set_theme()
         vis = MatPlotVis('outliers', rows=rows, cols=cols)
-        for index, column in enumerate(self.get_features(True), 1):
+        for index, column in enumerate(self.columns, 1):
             vis.add_graph(
                 lambda ax: sns.boxplot(x=self.__df[column], ax=ax),
                 x_lab=column,
@@ -388,12 +400,12 @@ class Data(Visualization):
         """
         Visualize target ratio using the Visual class
         """
-        data = self.__df.groupby(self.__target)[self.__target].count().to_frame()
+        data = self.__df.groupby(self.target)[self.target].count().to_frame()
         sns.set_theme()
         vis = MatPlotVis('target')
         vis.add_graph(
-            lambda ax: sns.barplot(x=data.index, y=self.__target, data=data, ax=ax),
-            x_lab=self.__target,
+            lambda ax: sns.barplot(x=data.index, y=self.target, data=data, ax=ax),
+            x_lab=self.target,
             y_lab='count'
         )
         self._visualize(vis)
@@ -404,7 +416,7 @@ class Data(Visualization):
         Print statistics about the dataset
         """
         def_cols = pd.get_option('display.max_columns')
-        pd.set_option('display.max_columns', len(self.get_features(True)))
+        pd.set_option('display.max_columns', len(self.columns))
         click.echo(f'\nDescription:\n{50 * "-"}')
         click.echo(self.__df.describe(include='all'))
         click.echo(f'\nInfo:\n{50 * "-"}')

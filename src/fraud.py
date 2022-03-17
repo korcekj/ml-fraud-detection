@@ -149,10 +149,10 @@ def generate_coroutines(data: Data) -> list:
     :return: list of coroutines generated
     """
     coroutines = []
-    cards = data.get_df()['cc_num'].unique()
-    target = data.get_target()
+    cards = data.df['cc_num'].unique()
+    target = data.target
     for i, card in enumerate(cards):
-        transactions = data.get_df().loc[data.get_df()['cc_num'] == card]
+        transactions = data.df.loc[data.df['cc_num'] == card]
         coroutines.append(process_transactions(transactions, target, i + 1, len(cards)))
     return coroutines
 
