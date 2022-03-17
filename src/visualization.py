@@ -35,20 +35,16 @@ class Visualization:
     def __init__(self):
         self.__visuals = []
 
-    def visualize(self, dir_path: str, index: int = -1):
+    def visualize(self, dir_path: str):
         """
         Show or export Visualization object
         :param dir_path: path to directory
-        :param index: index of the visual
         """
         if dir_path and not IO.is_dir(dir_path):
             raise Exception('Folder does not exist')
 
-        vis_list = self.__visuals
-        if index > -1:
-            vis_list = [self.__visuals[index]]
-
-        for visual in vis_list:
+        for _ in range(len(self.__visuals)):
+            visual = self.__visuals.pop(0)
             if dir_path is None:
                 visual.show()
             else:
