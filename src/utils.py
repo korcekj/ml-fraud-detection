@@ -23,6 +23,15 @@ class Scaler(StandardScaler, metaclass=Singleton):
         super().__init__()
 
 
+class Counter:
+    state = 0
+
+    @staticmethod
+    def next():
+        Counter.state += 1
+        return Counter.state
+
+
 class IO:
     @staticmethod
     def is_file(file_path: str):
