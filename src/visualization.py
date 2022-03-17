@@ -96,6 +96,7 @@ class MatPlotVis(Visual):
         if IO.is_file(file_out) and not overwrite:
             raise Exception('File already exists')
 
+        self.__figure.tight_layout()
         self.__figure.savefig(f'{file_out}.png')
         return self
 
