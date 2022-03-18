@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-from src.utils import IO
-from src.data import Data, DataType
-from src.visualization import Visualization
+from src.data import Data
 
 
 class Model(ABC):
