@@ -1,11 +1,13 @@
 import sys
-import click
 from time import perf_counter, time
-from src.utils import IO
-from src.nn import NeuralNetwork
-from src.dt import DecisionTree
+
+import click
+
 from src.data import Data, DataType
+from src.dt import DecisionTree
 from src.fraud import find_fraudulent
+from src.nn import NeuralNetwork
+from src.utils import IO
 
 
 @click.group()
@@ -109,7 +111,7 @@ def neural_network(
         visuals: bool
 ):
     """
-    Detect fraud transactions using decision tree
+    Detect fraud transactions using neural network
     :param train_data: path to training data
     :param test_data: path to testing data
     :param module_import: path to module for import

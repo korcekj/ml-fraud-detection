@@ -1,17 +1,19 @@
+from datetime import datetime
+
 import click
-import torch
 import numpy as np
 import seaborn as sns
+import torch
 import torch.nn as nn
 import torch.optim as optim
+from sklearn.metrics import confusion_matrix, classification_report
 from torch.nn import Module
 from torch.utils.data import DataLoader
-from datetime import datetime
-from sklearn.metrics import confusion_matrix, classification_report
-from src.visualization import Visualization, MatPlotVis
-from src.utils import IO
-from src.model import Model
+
 from src.data import Data
+from src.model import Model
+from src.utils import IO
+from src.visualization import Visualization, MatPlotVis
 
 
 class TorchNeuralNetwork(Module):
@@ -21,6 +23,7 @@ class TorchNeuralNetwork(Module):
 
     def __init__(self, n_features: int):
         """
+        Initialize object
         :param n_features: number of feature columns
         """
         super().__init__()
@@ -172,6 +175,7 @@ class NeuralNetwork(Model, Visualization):
 
     def __init__(self, n_features: int):
         """
+        Initialize object
         :param n_features: number of feature columns
         """
         super().__init__()
@@ -213,7 +217,7 @@ class NeuralNetwork(Model, Visualization):
 
     def __write(self, file_out: str, overwrite: bool):
         """
-        Write the Model object to output file
+        Write the Torch module/model to output file
         :param file_out: path to output file
         :param overwrite: boolean
         """
@@ -227,7 +231,7 @@ class NeuralNetwork(Model, Visualization):
 
     def load(self, file_path: str):
         """
-        Load a Model object
+        Load a Torch module/model
         :param file_path: path to input file
         :return: Model object
         """
@@ -246,10 +250,10 @@ class NeuralNetwork(Model, Visualization):
 
     def fit(self, train_data: Data, valid_data: Data, params: dict):
         """
-        Train Model
+        Train the Torch module/model
         :param train_data: Training data
         :param valid_data: Validation data
-        :param params: size of the batch as a number
+        :param params: training parameters
         :return: Model object
         """
         # Initialize data loaders
@@ -278,7 +282,7 @@ class NeuralNetwork(Model, Visualization):
 
     def evaluate(self, test_data: Data):
         """
-        Evaluate Model
+        Evaluate the Torch module/model
         :param test_data: Testing data
         :return: Model object
         """

@@ -1,14 +1,16 @@
+from datetime import datetime
+
 import click
 import joblib
 import numpy as np
 import seaborn as sns
-from datetime import datetime
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import confusion_matrix, classification_report
-from src.visualization import Visualization, TreeVis, MatPlotVis
+from sklearn.tree import DecisionTreeClassifier
+
 from src.data import Data
 from src.model import Model
 from src.utils import IO
+from src.visualization import Visualization, TreeVis, MatPlotVis
 
 
 class DecisionTree(Model, Visualization):
@@ -17,6 +19,10 @@ class DecisionTree(Model, Visualization):
     """
 
     def __init__(self, n_features: int):
+        """
+        Initialize object
+        :param n_features: number of feature columns
+        """
         super().__init__()
         self.__model = DecisionTreeClassifier(max_features=n_features)
 
@@ -26,7 +32,7 @@ class DecisionTree(Model, Visualization):
         Get Scikit module/model
         :param n_features: number of feature columns
         :param file_path: path to input file
-        :return: Module object
+        :return: Model object
         """
         model = cls(n_features)
         if file_path is not None:
@@ -36,7 +42,7 @@ class DecisionTree(Model, Visualization):
     def info(self):
         """
         Get info about Scikit module/model
-        :return: Module object
+        :return: Model object
         """
         click.echo(self.__model)
         click.echo(self.__model.get_params())
@@ -73,7 +79,7 @@ class DecisionTree(Model, Visualization):
         """
         Load a Scikit module/model
         :param file_path: path to input file
-        :return: Module object
+        :return: Model object
         """
         self.__read(file_path)
         return self
@@ -83,12 +89,19 @@ class DecisionTree(Model, Visualization):
         Export the Scikit module/model to output file
         :param dir_path: path to output folder
         :param overwrite: boolean
-        :return: Module object
+        :return: Model object
         """
         self.__write(f'{dir_path}/dt.model.joblib', overwrite)
         return self
 
     def fit(self, train_data: Data, valid_data: Data, params: dict):
+        """
+        Train the Scikit module/model
+        :param train_data: Training data
+        :param valid_data: Validation data
+        :param params: training parameters
+        :return: Model object
+        """
         # Set model parameters
         self.__model.set_params(**params)
         # Prepare input and target data
@@ -107,8 +120,14 @@ class DecisionTree(Model, Visualization):
         # Visualize training results using the matplotlib library
         vis = TreeVis('decision_tree_train', tree=self.__model)
         self._visualize(vis)
+        return self
 
     def evaluate(self, test_data: Data):
+        """
+        Evaluate the Scikit module/model
+        :param test_data: Testing data
+        :return: Model object
+        """
         # Prepare input and target data
         inputs = test_data.df[test_data.features]
         targets = test_data.df[test_data.target].values

@@ -1,11 +1,13 @@
-from graphviz import Source
-from src.utils import IO, Counter
 from abc import ABC, abstractmethod
+
+from graphviz import Source
 from matplotlib import pyplot as plt
 from matplotlib.figure import Figure as MatPlotFigure
-from sklearn.tree import export_graphviz, BaseDecisionTree
 from plotly.graph_objects import Figure as PlotlyFigure
 from plotly.subplots import make_subplots
+from sklearn.tree import export_graphviz, BaseDecisionTree
+
+from src.utils import IO, Counter
 
 
 class Visual(ABC):
@@ -33,6 +35,9 @@ class Visualization:
     """
 
     def __init__(self):
+        """
+        Initialize object
+        """
         self.__visuals = []
 
     def visualize(self, dir_path: str):
@@ -52,7 +57,7 @@ class Visualization:
 
     def _visualize(self, vis: Visual):
         """
-        Add Visualization object
+        Add Visualization object to the list of visualizations
         :param vis: Visualization object
         """
         self.__visuals.append(vis)
@@ -64,6 +69,13 @@ class MatPlotVis(Visual):
     """
 
     def __init__(self, name: str, fig_size: (float, float) = None, rows: int = 1, cols: int = 1):
+        """
+        Initialize object
+        :param name: name of the Visual
+        :param fig_size: size of the figure
+        :param rows: number of rows
+        :param cols: number of columns
+        """
         self.__name = name
         self.__rows = rows
         self.__cols = cols
@@ -73,18 +85,18 @@ class MatPlotVis(Visual):
     def show(self):
         """
         Display the graph
-        :return MatPlotVis object
+        :return Visual object
         """
         self.__figure.tight_layout()
         self.__figure.show()
-        return self.__figure
+        return self
 
     def export(self, file_out: str, overwrite: bool = False):
         """
-        Export the MatPlotVis object to output file
+        Export the Visual object to output file
         :param file_out: path to output file
         :param overwrite: boolean
-        :return: MatPlotVis object
+        :return: Visual object
         """
         if not file_out:
             raise Exception('Output path is missing')
@@ -97,6 +109,14 @@ class MatPlotVis(Visual):
         return self
 
     def add_graph(self, graph, x_lab: str = '', y_lab: str = '', position: int = 1):
+        """
+        Add graph into the existing layout
+        :param graph: callback function returning graph
+        :param x_lab: label on x
+        :param y_lab: label on y
+        :param position: position on the grid
+        :return: Axes subclass object
+        """
         ax = self.__figure.add_subplot(self.__rows, self.__cols, position)
         ax = graph(ax)
         ax.set_xlabel(x_lab)
@@ -105,6 +125,10 @@ class MatPlotVis(Visual):
 
     @property
     def name(self):
+        """
+        Get name property
+        :return: Visual name
+        """
         return self.__name
 
     @property
@@ -131,6 +155,8 @@ class PlotlyVis(Visual):
 
     def __init__(self, name: str, titles: list = None, rows: int = 1, cols: int = 1):
         """
+        Initialize object
+        :param name: name of the Visual
         :param titles: list of graph titles
         :param rows: number of rows
         :param cols: number of columns
@@ -144,17 +170,17 @@ class PlotlyVis(Visual):
     def show(self):
         """
         Display the graph
-        :return PlotlyVis object
+        :return Visual object
         """
         self.__figure.show()
         return self
 
     def export(self, file_out: str, overwrite: bool = False):
         """
-        Export the PlotlyVis object to output file
+        Export the Visual object to output file
         :param file_out: path to output file
         :param overwrite: boolean
-        :return: PlotlyVis object
+        :return: Visual object
         """
         if not file_out:
             raise Exception('Output path is missing')
@@ -173,7 +199,7 @@ class PlotlyVis(Visual):
         :param y_lab: label on y
         :param row: row index
         :param col: column index
-        :return: PlotlyVis object
+        :return: Visual object
         """
         self.__figure.add_trace(graph, row=row, col=col)
         self.__figure.update_xaxes(title_text=x_lab, row=row, col=col)
@@ -182,6 +208,10 @@ class PlotlyVis(Visual):
 
     @property
     def name(self):
+        """
+        Get name property
+        :return: Visual name
+        """
         return self.__name
 
     @property
@@ -207,6 +237,11 @@ class TreeVis(Visual):
     """
 
     def __init__(self, name: str, tree: BaseDecisionTree = None):
+        """
+        Initialize object
+        :param name: name of the Visual
+        :param tree: BaseDecisionTree module/model
+        """
         self.__name = name
         self.__tree = tree
 
@@ -218,10 +253,10 @@ class TreeVis(Visual):
 
     def export(self, file_out: str, overwrite: bool = False):
         """
-        Export the TreeVis object to output file
+        Export the Visual object to output file
         :param file_out: path to output file
         :param overwrite: boolean
-        :return: TreeVis object
+        :return: Visual object
         """
         if not file_out:
             raise Exception('Output path is missing')
@@ -236,10 +271,18 @@ class TreeVis(Visual):
 
     @property
     def name(self):
+        """
+        Get name property
+        :return: Visual name
+        """
         return self.__name
 
     @property
     def tree(self):
+        """
+        Get tree property
+        :return: BaseDecisionTree object
+        """
         return self.__tree
 
     @tree.setter

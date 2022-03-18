@@ -1,17 +1,19 @@
 import math
+from enum import Enum
+from typing import Optional, List
+
 import click
 import pandas as pd
 import seaborn as sns
-from enum import Enum
-from typing import Optional, List
-from src.utils import Scaler, IO
-from src.visualization import Visualization, MatPlotVis
+from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.model_selection import train_test_split
 from torch import FloatTensor
 from torch.utils.data import Dataset, DataLoader
-from imblearn.pipeline import Pipeline
-from imblearn.over_sampling import SMOTE
-from imblearn.under_sampling import RandomUnderSampler
+
+from src.utils import Scaler, IO
+from src.visualization import Visualization, MatPlotVis
 
 
 class TorchDataset(Dataset):
@@ -21,6 +23,7 @@ class TorchDataset(Dataset):
 
     def __init__(self, x_data: FloatTensor, y_data: FloatTensor):
         """
+        Initialize object
         :param x_data: tensor of features
         :param y_data: tensor of target
         """
@@ -49,6 +52,10 @@ class DataType(Enum):
     """
 
     def __str__(self):
+        """
+        Override default method to get a name of enum value
+        :return: name of the value
+        """
         return str(self.name)
 
     TRAIN = 1
@@ -64,6 +71,7 @@ class Data(Visualization):
 
     def __init__(self, file_path: Optional[str], df: Optional[pd.DataFrame], dt: DataType, target: str):
         """
+        Initialize object
         :param file_path: path to the dataset
         :param df: DataFrame object
         :param dt: data type of the dataset
@@ -388,6 +396,7 @@ class Data(Visualization):
     def vis_correlation(self):
         """
         Visualize correlation with the dataset using the Visual class
+        :return: Data object
         """
         data = self.__df.corr()
         sns.set_theme()
@@ -399,6 +408,7 @@ class Data(Visualization):
     def vis_target(self):
         """
         Visualize target ratio using the Visual class
+        :return: Data object
         """
         data = self.__df.groupby(self.target)[self.target].count().to_frame()
         sns.set_theme()
@@ -414,6 +424,7 @@ class Data(Visualization):
     def info(self):
         """
         Print statistics about the dataset
+        :return: Data object
         """
         def_cols = pd.get_option('display.max_columns')
         pd.set_option('display.max_columns', len(self.columns))

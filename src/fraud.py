@@ -1,15 +1,17 @@
-import os
 import json
 import math
-import click
-from src.data import Data
-from dotenv import load_dotenv
-from datetime import datetime
-from urllib.request import urlopen
-from urllib.parse import urlencode
-from aiohttp import ClientSession
+import os
 from asyncio import gather, run
+from datetime import datetime
+from urllib.parse import urlencode
+from urllib.request import urlopen
+
+import click
+from aiohttp import ClientSession
+from dotenv import load_dotenv
 from pandas import DataFrame, Series
+
+from src.data import Data
 
 # Load environment variables
 load_dotenv()
