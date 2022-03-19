@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  cli:
+    image: korcekj/ml-fraud-detection:<tag>
+    environment:
+      - MS_DISTANCE_URL=<msdistance url>
+    volumes:
+      - <data dir path>:/home/cli_user/data
+      - <visuals dir path>:/home/cli_user/visuals
+      - <models dir path>:/home/cli_user/models
+    stdin_open: true
+    tty: true
