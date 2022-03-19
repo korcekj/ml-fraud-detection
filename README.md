@@ -6,21 +6,35 @@ Fraud detection system built using Machine Learning
 
 ### Docker
 
-#### 1. Define image name and environment variables
+#### 1. Define image names and environment variables
 
 ```yml
     version: "3.9"
     services:
       cli:
         image: korcekj/ml-fraud-detection:<tag>
+        depends_on:
+          - api
         environment:
           - MS_DISTANCE_URL=<msdistance url>
         volumes:
-          - <data dir path>:/home/cli_user/data
-          - <visuals dir path>:/home/cli_user/visuals
-          - <models dir path>:/home/cli_user/models
+          - <data dir path>:/home/cli_user/<dir>
+          - <visuals dir path>:/home/cli_user/<dir>
+          - <models dir path>:/home/cli_user/<dir>
         stdin_open: true
         tty: true
+      api:
+        image: korcekj/ms-distance:<tag>
+        ports:
+          - "8080:8080"
+        environment:
+          - MONGO_URL=<mongodb url>
+          - MONGO_DB=<mongodb name>
+          - DM_API_URL=<distancematrix url>
+          - DM_API_KEY=<distancematrix api key>
+          - GC_API_URL=<geocode url>
+          - GC_API_KEY=<geocode api key>
+          - IWI_API_URL=<ipwhois url>
 ```
 
 #### 2. Compose container
