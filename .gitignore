@@ -146,7 +146,7 @@ cython_debug/
 !/data/fraudTest.csv
 
 # Models
-/models
+/models/**
 
-# Visualizations
-/visuals
+# Visuals
+/visuals/**
