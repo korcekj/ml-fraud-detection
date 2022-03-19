@@ -146,7 +146,7 @@ def neural_network(
 
     # Visualize dataset
     if visuals:
-        dir_path = IO.create_dir(visuals_export, batch_id)
+        dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
         data_train.vis_target().vis_outliers().vis_correlation()
         data_train.visualize(dir_path)
         data_test.vis_target().vis_outliers().vis_correlation()
@@ -165,18 +165,18 @@ def neural_network(
         }
         model.fit(data_train, data_valid, params)
         if visuals:
-            dir_path = IO.create_dir(visuals_export, batch_id)
+            dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
             model.visualize(dir_path)
 
     # Evaluate model
     model.evaluate(data_test)
     if visuals:
-        dir_path = IO.create_dir(visuals_export, batch_id)
+        dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
         model.visualize(dir_path)
 
     # Export model
     if module_export is not None:
-        dir_path = IO.create_dir(module_export, batch_id)
+        dir_path = IO.create_dirs(f'{module_export}/{batch_id}')
         model.export(dir_path)
 
     # Stop timer
@@ -238,7 +238,7 @@ def decision_tree(
 
     # Visualize dataset
     if visuals:
-        dir_path = IO.create_dir(visuals_export, batch_id)
+        dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
         data_train.vis_target().vis_outliers().vis_correlation()
         data_train.visualize(dir_path)
         data_test.vis_target().vis_outliers().vis_correlation()
@@ -258,18 +258,18 @@ def decision_tree(
         }
         model.fit(data_train, None, params)
         if visuals:
-            dir_path = IO.create_dir(visuals_export, batch_id)
+            dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
             model.visualize(dir_path)
 
     # Evaluate model
     model.evaluate(data_test)
     if visuals:
-        dir_path = IO.create_dir(visuals_export, batch_id)
+        dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
         model.visualize(dir_path)
 
     # Export model
     if module_export is not None:
-        dir_path = IO.create_dir(module_export, batch_id)
+        dir_path = IO.create_dirs(f'{module_export}/{batch_id}')
         model.export(dir_path)
 
     # Stop timer
