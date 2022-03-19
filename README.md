@@ -4,18 +4,36 @@ Fraud detection system built using Machine Learning
 
 ## Installation
 
-### Manual
+### Docker
+
+#### 1. Define image name and environment variables
+
+```yml
+    version: "3.9"
+    services:
+      cli:
+        image: korcekj/ml-fraud-detection:<tag>
+        environment:
+          - MS_DISTANCE_URL=<msdistance url>
+        volumes:
+          - <data dir path>:/home/cli_user/data
+          - <visuals dir path>:/home/cli_user/visuals
+          - <models dir path>:/home/cli_user/models
+        stdin_open: true
+        tty: true
+```
+
+#### 2. Compose container
 
 ```bash
-  $ git clone https://github.com/korcekj/ml-fraud-detection.git
-  $ cd ml-fraud-detection
-  $ python setup.py install
+  $ docker compose up -d
+  $ docker exec -it <container-name-or-id> bash
 ```
 
 ## Usage
 
 ```bash
-  $ ml-fraud-detection --help
+  $ python main.py --help
 ```
 
 ### Dataset cleanup
@@ -25,7 +43,7 @@ path to input file **:param data_export:** path to output file **:param target:*
 column name **:param rows:** number of rows to pick up **:param columns:** column names to be removed
 
 ```bash
-  $ ml-fraud-detection cd -di <dataset_in> -de <dataset_out> -t <column_name>
+  $ python main.py cd -di <dataset_in> -de <dataset_out> -t <column_name>
 ```
 
 | Parameter               | Type      | Description                |
@@ -43,7 +61,7 @@ Detect fraud transactions using microservice **:param data_import:** path to inp
 output file **:param target:** column name **:param rows:** number of rows to pick up
 
 ```bash
-  $ ml-fraud-detection fd -di <dataset_in> -de <dataset_out> -t <column_name>
+  $ python main.py fd -di <dataset_in> -de <dataset_out> -t <column_name>
 ```
 
 | Parameter               | Type      | Description                |
@@ -65,7 +83,7 @@ learning rate **:param epochs:** number of epochs **:param target:** column name
 **:param visuals:** boolean
 
 ```bash
-  $ ml-fraud-detection nn -tnd <dataset_train> -tts <dataset_test> -t <column_name>
+  $ python main.py nn -tnd <dataset_train> -tts <dataset_test> -t <column_name>
 ```
 
 | Parameter               | Type      | Description                |
@@ -95,7 +113,7 @@ criterion:** split quality function **:param target:** column name
 **:param visuals:** boolean
 
 ```bash
-  $ ml-fraud-detection dt -tnd <dataset_train> -tts <dataset_test> -t <column_name>
+  $ python main.py dt -tnd <dataset_train> -tts <dataset_test> -t <column_name>
 ```
 
 | Parameter               | Type                           | Description                               |
