@@ -144,11 +144,6 @@ cython_debug/
 # Docker
 docker-compose.*.yml
 
-# Data
-/data
-!/data/fraudTrain.csv
-!/data/fraudTest.csv
-
 # Models
 /models/*
 
