@@ -5,6 +5,7 @@ import click
 
 from src.data import Data, DataType
 from src.dt import DecisionTree
+from src.rf import RandomForest
 from src.fraud import find_fraudulent
 from src.nn import NeuralNetwork
 from src.utils import IO
@@ -251,6 +252,103 @@ def decision_tree(
     # Train model
     if module_import is None:
         params = {
+            'criterion': criterion,
+            'max_depth': max_depth,
+            'min_samples_split': min_samples_split,
+            'min_samples_leaf': min_samples_leaf
+        }
+        model.fit(data_train, None, params)
+        if visuals:
+            dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
+            model.visualize(dir_path)
+
+    # Evaluate model
+    model.evaluate(data_test)
+    if visuals:
+        dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
+        model.visualize(dir_path)
+
+    # Export model
+    if module_export is not None:
+        dir_path = IO.create_dirs(f'{module_export}/{batch_id}')
+        model.export(dir_path)
+
+    # Stop timer
+    time_end = perf_counter()
+    # Print the number of seconds it takes for the function to run
+    click.echo(f'Task takes: {(time_end - time_start):.1f}s')
+
+
+@main.command('rf')
+@click.option('-tnd', '--train-data', type=click.Path(exists=True), required=True, help='Training data file path')
+@click.option('-ttd', '--test-data', type=click.Path(exists=True), required=True, help='Testing data file path')
+@click.option('-mi', '--module-import', type=click.Path(exists=True), help='Module file path for import')
+@click.option('-me', '--module-export', type=click.Path(), help='Module folder path for export')
+@click.option('-ve', '--visuals-export', type=click.Path(), help='Visualizations folder path for export')
+@click.option('-md', '--max-depth', type=click.INT, help='Maximum depth of the tree')
+@click.option('-ms', '--min-samples-split', type=click.INT, default=2, help='Minimum number of samples to split a node')
+@click.option('-ml', '--min-samples-leaf', type=click.INT, default=1, help='Minimum number of samples at a leaf node')
+@click.option('-ne', '--n-estimators', type=click.INT, default=100, help='Number of trees')
+@click.option('-c', '--criterion', type=click.Choice(['gini', 'entropy']), default='gini', help='Quality function')
+@click.option('-t', '--target', required=True, help='Name of target column')
+@click.option('-v', '--visuals', is_flag=True, help='Show visuals')
+def decision_tree(
+        train_data: str,
+        test_data: str,
+        module_import: str,
+        module_export: str,
+        visuals_export: str,
+        max_depth: int,
+        min_samples_split: int,
+        min_samples_leaf: int,
+        n_estimators: int,
+        criterion: str,
+        target: str,
+        visuals: bool
+):
+    """
+    Detect fraud transactions using random forest
+    :param train_data: path to training data
+    :param test_data: path to testing data
+    :param module_import: path to module for import
+    :param module_export: path to module for export
+    :param visuals_export: path to visuals folder
+    :param max_depth: maximum depth of the tree
+    :param min_samples_split: minimum number of samples to split a node
+    :param min_samples_leaf: minimum number of samples at a leaf node
+    :param n_estimators: number of trees
+    :param criterion: split quality function
+    :param target: column name
+    :param visuals: boolean
+    """
+    # Start timer
+    time_start = perf_counter()
+    batch_id = str(int(time()))
+
+    # Load data
+    data_train = Data.file(train_data, DataType.TRAIN, target)
+    data_test = Data.file(test_data, DataType.TEST, target)
+
+    # Normalize data
+    data_train.remove_null_cells().encode()
+    data_test.remove_null_cells().encode()
+
+    # Visualize dataset
+    if visuals:
+        dir_path = IO.create_dirs(f'{visuals_export}/{batch_id}')
+        data_train.vis_target().vis_outliers().vis_correlation()
+        data_train.visualize(dir_path)
+        data_test.vis_target().vis_outliers().vis_correlation()
+        data_test.visualize(dir_path)
+
+    # Initialize model
+    n_features = len(data_train.features)
+    model = RandomForest.create(n_features, module_import).info()
+
+    # Train model
+    if module_import is None:
+        params = {
+            'n_estimators': n_estimators,
             'criterion': criterion,
             'max_depth': max_depth,
             'min_samples_split': min_samples_split,
