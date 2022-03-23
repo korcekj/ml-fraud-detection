@@ -8,14 +8,9 @@ from urllib.request import urlopen
 
 import click
 from aiohttp import ClientSession
-from dotenv import load_dotenv
 from pandas import DataFrame, Series
 
 from src.data import Data
-
-# Load environment variables
-load_dotenv()
-MS_DISTANCE_URL = os.getenv("MS_DISTANCE_URL")
 
 
 def is_nan(variables: list) -> bool:
@@ -64,7 +59,7 @@ def duration_diff_in_seconds_sync(address1: str, address2: str) -> int:
     if is_nan(address1.split(' ')) or is_nan(address2.split(' ')):
         return -1
     url_query = urlencode({'from': address1, 'to': address2})
-    url = MS_DISTANCE_URL + url_query
+    url = os.environ["MS_DISTANCE_URL"] + url_query
     response = urlopen(url).read()
     json_data = json.loads(response)
     return json_data['duration']
@@ -81,7 +76,7 @@ async def duration_diff_in_seconds_async(address1: str, address2: str) -> int:
         return -1
     async with ClientSession() as session:
         url_query = urlencode({'from': address1, 'to': address2})
-        url = MS_DISTANCE_URL + url_query
+        url = os.environ["MS_DISTANCE_URL"] + url_query
         response = await session.get(url)
         if response.status != 200:
             response.raise_for_status()
