@@ -118,7 +118,12 @@ class DecisionTree(Model, Visualization):
         )
 
         # Visualize training results using the matplotlib library
-        vis = TreeVis('decision_tree_train', tree=self.__model)
+        vis = TreeVis(
+            'decision_tree_train',
+            tree=self.__model,
+            features=train_data.features,
+            classes=["0", "1"]
+        )
         self._visualize(vis)
         return self
 

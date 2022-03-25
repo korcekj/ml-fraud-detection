@@ -123,7 +123,12 @@ class RandomForest(Model, Visualization):
         )
 
         # Visualize training results using the matplotlib library
-        vis = TreeVis('random_forest_train', tree=self.__model.estimators_[0])
+        vis = TreeVis(
+            'random_forest_train',
+            tree=self.__model.estimators_[0],
+            features=train_data.features,
+            classes=["0", "1"]
+        )
         self._visualize(vis)
         return self
 

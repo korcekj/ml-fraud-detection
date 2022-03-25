@@ -236,7 +236,7 @@ class TreeVis(Visual):
     A class used to visualize a BaseDecisionTree object
     """
 
-    def __init__(self, name: str, tree: BaseDecisionTree = None):
+    def __init__(self, name: str, tree: BaseDecisionTree = None, features: list = None, classes: list = None):
         """
         Initialize object
         :param name: name of the Visual
@@ -244,6 +244,8 @@ class TreeVis(Visual):
         """
         self.__name = name
         self.__tree = tree
+        self.__features = features
+        self.__classes = classes
 
     def show(self):
         """
@@ -264,7 +266,7 @@ class TreeVis(Visual):
         if IO.is_file(file_out) and not overwrite:
             raise Exception('File already exists')
 
-        dot_data = export_graphviz(self.__tree, filled=True)
+        dot_data = export_graphviz(self.__tree, filled=True, feature_names=self.__features, class_names=self.__classes)
         graph = Source(dot_data, format='png')
         graph.render(file_out, cleanup=True)
         return self
