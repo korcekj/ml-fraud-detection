@@ -28,13 +28,10 @@ Fraud detection system built using Machine Learning
         ports:
           - "8080:8080"
         environment:
-          - MONGO_URL=<mongodb url>
+          - MONGO_URI=<mongodb uri>
           - MONGO_DB=<mongodb name>
-          - DM_API_URL=<distancematrix url>
           - DM_API_KEY=<distancematrix api key>
-          - GC_API_URL=<geocode url>
           - GC_API_KEY=<geocode api key>
-          - IWI_API_URL=<ipwhois url>
 ```
 
 #### 2. Compose container
