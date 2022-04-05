@@ -5,9 +5,9 @@ import click
 
 from src.data import Data, DataType
 from src.dt import DecisionTree
-from src.rf import RandomForest
-from src.fraud import find_fraudulent
+from src.ktor import MicroServices
 from src.nn import NeuralNetwork
+from src.rf import RandomForest
 from src.utils import IO
 
 
@@ -54,14 +54,14 @@ def clean_data(data_import: str, data_export: str, target: str, rows: int, colum
     click.echo(f'Task takes: {(time_end - time_start):.1f}s')
 
 
-@main.command('fd')
+@main.command('ms')
 @click.option('-di', '--data-import', type=click.Path(exists=True), required=True, help='Data file path for import')
 @click.option('-de', '--data-export', type=click.Path(), required=True, help='Data file path for export')
 @click.option('-t', '--target', required=True, help='Name of target column')
 @click.option('-r', '--rows', type=click.INT, default=0, help='Number of rows to be processed')
-def fraud_detection(data_import: str, data_export: str, target: str, rows: int):
+def microservices(data_import: str, data_export: str, target: str, rows: int):
     """
-    Detect fraud transactions using microservice
+    Detect fraud transactions using microservices
     :param data_import: path to input file
     :param data_export: path to output file
     :param target: column name
@@ -74,7 +74,8 @@ def fraud_detection(data_import: str, data_export: str, target: str, rows: int):
     data = Data.file(data_import, DataType.UNDEFINED, target, rows)
 
     # Find fraudulent transactions
-    find_fraudulent(data)
+    ms = MicroServices(data).fraudulent()
+    data = ms.data
 
     # Export data
     if data_export is not None:
