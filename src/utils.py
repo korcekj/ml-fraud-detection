@@ -1,3 +1,4 @@
+import math
 import os
 
 from sklearn.preprocessing import StandardScaler
@@ -48,6 +49,33 @@ class Counter:
         """
         Counter.__state += 1
         return Counter.__state
+
+
+class Validator:
+    """
+    A static class used to represent a validation functionalities
+    """
+
+    @staticmethod
+    def is_nan(variables: list) -> bool:
+        """
+        Check whether the provided list of variables contains NaNs
+        :param variables: list of values to be checked
+        :return: boolean
+        """
+
+        def validate(var) -> bool:
+            """
+            Validate the value against NaN check
+            :param var: value to be checked
+            :return: boolean
+            """
+            try:
+                return math.isnan(float(var))
+            except ValueError:
+                return False
+
+        return any(validate(var) for var in variables)
 
 
 class IO:
