@@ -201,13 +201,14 @@ class Data(Visualization):
         self.__write(file_out, overwrite)
         return self
 
-    def merge(self, data):
+    def merge(self, df: pd.DataFrame):
         """
         Merge Data object
-        :param data: Data object to be merged
+        :param df: DataFrame object to be merged
         :return: Data object
         """
-        self.__df = pd.concat([self.__df, data])
+        for i, row in df.iterrows():
+            self.__df.loc[i] = row
         return self
 
     def remove_null_cells(self):
