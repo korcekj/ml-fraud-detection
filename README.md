@@ -66,13 +66,13 @@ column name **:param rows:** number of rows to pick up **:param columns:** colum
 | `-c, --columns` | `TEXT`    | Columns to be removed |
 | `--help` |           | Show this message and exit |
 
-### Fraud detection (Microservice)
+### Fraud detection (Microservices)
 
-Detect fraud transactions using microservice **:param data_import:** path to input file **:param data_export:** path to
+Detect fraud transactions using microservices **:param data_import:** path to input file **:param data_export:** path to
 output file **:param target:** column name **:param rows:** number of rows to pick up
 
 ```bash
-  $ python main.py fd -di <dataset_in> -de <dataset_out> -t <column_name>
+  $ python main.py ms -di <dataset_in> -de <dataset_out> -t <column_name>
 ```
 
 | Parameter               | Type      | Description                |
@@ -83,7 +83,7 @@ output file **:param target:** column name **:param rows:** number of rows to pi
 | `-r, --rows` | `INTEGER` | Number of rows to be processed |
 | `--help` |           | Show this message and exit |
 
-### Neural Network
+### Fraud detection (Neural Network)
 
 Detect fraud transactions using neural network **:param train_data:** path to training data **:param test_data:** path
 to testing data **:param module_import:**
@@ -112,7 +112,7 @@ learning rate **:param epochs:** number of epochs **:param target:** column name
 | `-v, --visuals` |  | Show visuals |
 | `--help` |           | Show this message and exit |
 
-### Decision Tree
+### Fraud detection (Decision Tree)
 
 Detect fraud transactions using decision tree **:param train_data:** path to training data **:param test_data:** path to
 testing data **:param module_import:**
@@ -142,7 +142,7 @@ criterion:** split quality function **:param target:** column name
 | `-v, --visuals` |                                | Show visuals                              |
 | `--help` |                                | Show this message and exit                |
 
-### Random Forest
+### Fraud detection (Random Forest)
 
 Detect fraud transactions using random forest **:param train_data:** path to training data **:param test_data:** path to
 testing data **:param module_import:**
