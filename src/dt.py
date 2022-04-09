@@ -45,7 +45,6 @@ class DecisionTree(Model, Visualization):
         :return: Model object
         """
         click.echo(self.__model)
-        click.echo(self.__model.get_params())
         return self
 
     def __read(self, file_in: str):
@@ -104,6 +103,7 @@ class DecisionTree(Model, Visualization):
         """
         # Set model parameters
         self.__model.set_params(**params)
+        click.echo(self.__model.get_params())
         # Prepare input and target data
         inputs = train_data.df[train_data.features]
         targets = train_data.df[train_data.target].values
@@ -152,3 +152,11 @@ class DecisionTree(Model, Visualization):
         )
         self._visualize(vis)
         return self
+
+    @property
+    def model(self):
+        """
+        Get Model object
+        :return: Model object
+        """
+        return self.__model

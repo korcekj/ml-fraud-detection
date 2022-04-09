@@ -304,3 +304,11 @@ class NeuralNetwork(Model, Visualization):
         )
         self._visualize(vis)
         return self
+
+    @property
+    def model(self):
+        """
+        Get Model object
+        :return: Model object
+        """
+        return self.__model

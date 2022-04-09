@@ -50,7 +50,6 @@ class RandomForest(Model, Visualization):
         :return: Model object
         """
         click.echo(self.__model)
-        click.echo(self.__model.get_params())
         return self
 
     def __read(self, file_in: str):
@@ -109,6 +108,7 @@ class RandomForest(Model, Visualization):
         """
         # Set model parameters
         self.__model.set_params(**params)
+        click.echo(self.__model.get_params())
         # Prepare input and target data
         inputs = train_data.df[train_data.features]
         targets = train_data.df[train_data.target].values
@@ -124,8 +124,15 @@ class RandomForest(Model, Visualization):
 
         # Visualize training results using the matplotlib library
         vis = TreeVis(
-            'random_forest_train',
+            f'random_forest_train_{0}',
             tree=self.__model.estimators_[0],
+            features=train_data.features,
+            classes=["0", "1"]
+        )
+        self._visualize(vis)
+        vis = TreeVis(
+            f'random_forest_train_{len(self.__model.estimators_) - 1}',
+            tree=self.__model.estimators_[-1],
             features=train_data.features,
             classes=["0", "1"]
         )
@@ -157,3 +164,11 @@ class RandomForest(Model, Visualization):
         )
         self._visualize(vis)
         return self
+
+    @property
+    def model(self):
+        """
+        Get Model object
+        :return: Model object
+        """
+        return self.__model
