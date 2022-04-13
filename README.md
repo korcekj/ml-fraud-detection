@@ -107,7 +107,7 @@ learning rate **:param epochs:** number of epochs **:param target:** column name
 | `-vs, --valid-split` | `FLOAT RANGE` | Validation split  [0<=x<=1] |
 | `-bs, --batch-size` | `INTEGER RANGE` | Batch size  [1<=x<=32768] |
 | `-lr, --learning-rate` | `FLOAT RANGE` | Learning rate  [0<=x<=1] |
-| `-e, --epochs` | `INTEGER RANGE` | Batch size  [1<=x<=10000] |
+| `-e, --epochs` | `INTEGER RANGE` | Number of epochs  [1<=x<=10000] |
 | `-t, --target` | `TEXT`    | Name of target column  [required] |
 | `-v, --visuals` |  | Show visuals |
 | `--help` |           | Show this message and exit |
