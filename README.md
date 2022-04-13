@@ -54,7 +54,7 @@ path to input file **:param data_export:** path to output file **:param target:*
 column name **:param rows:** number of rows to pick up **:param columns:** column names to be removed
 
 ```bash
-  $ python main.py cd -di <dataset_in> -de <dataset_out> -t <column_name>
+  $ python main.py data-cleanup -di <dataset_in> -de <dataset_out> -t <column_name>
 ```
 
 | Parameter               | Type      | Description                |
@@ -72,7 +72,7 @@ Detect fraud transactions using microservices **:param data_import:** path to in
 output file **:param target:** column name **:param rows:** number of rows to pick up
 
 ```bash
-  $ python main.py ms -di <dataset_in> -de <dataset_out> -t <column_name>
+  $ python main.py microservices -di <dataset_in> -de <dataset_out> -t <column_name>
 ```
 
 | Parameter               | Type      | Description                |
@@ -94,7 +94,7 @@ learning rate **:param epochs:** number of epochs **:param target:** column name
 **:param visuals:** boolean
 
 ```bash
-  $ python main.py nn -tnd <dataset_train> -tts <dataset_test> -t <column_name>
+  $ python main.py neural-network -tnd <dataset_train> -tts <dataset_test> -t <column_name>
 ```
 
 | Parameter               | Type      | Description                |
@@ -124,7 +124,7 @@ criterion:** split quality function **:param target:** column name
 **:param visuals:** boolean
 
 ```bash
-  $ python main.py dt -tnd <dataset_train> -tts <dataset_test> -t <column_name>
+  $ python main.py decision-tree -tnd <dataset_train> -tts <dataset_test> -t <column_name>
 ```
 
 | Parameter               | Type                           | Description                               |
@@ -153,7 +153,7 @@ a leaf node **:param n_estimators:** number of trees **:param criterion:** split
 column name **:param visuals:** boolean
 
 ```bash
-  $ python main.py rf -tnd <dataset_train> -tts <dataset_test> -t <column_name>
+  $ python main.py random-forest -tnd <dataset_train> -tts <dataset_test> -t <column_name>
 ```
 
 | Parameter                  | Type                           | Description                               |
