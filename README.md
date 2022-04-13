@@ -153,7 +153,7 @@ a leaf node **:param n_estimators:** number of trees **:param criterion:** split
 column name **:param visuals:** boolean
 
 ```bash
-  $ python main.py dt -tnd <dataset_train> -tts <dataset_test> -t <column_name>
+  $ python main.py rf -tnd <dataset_train> -tts <dataset_test> -t <column_name>
 ```
 
 | Parameter                  | Type                           | Description                               |
