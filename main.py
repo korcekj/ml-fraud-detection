@@ -19,13 +19,13 @@ def main():
     pass
 
 
-@main.command('cd')
+@main.command()
 @click.option('-di', '--data-import', type=click.Path(exists=True), required=True, help='Data file path for import')
 @click.option('-de', '--data-export', type=click.Path(), required=True, help='Data file path for export')
 @click.option('-t', '--target', required=True, help='Name of target column')
 @click.option('-r', '--rows', type=click.INT, default=0, help='Number of rows to be processed')
 @click.option('-c', '--columns', help='Columns to be removed')
-def clean_data(data_import: str, data_export: str, target: str, rows: int, columns: str):
+def data_cleanup(data_import: str, data_export: str, target: str, rows: int, columns: str):
     """
     Clean the dataset from unwanted columns and empty cells
     :param data_import: path to input file
@@ -54,7 +54,7 @@ def clean_data(data_import: str, data_export: str, target: str, rows: int, colum
     click.echo(f'Task takes: {(time_end - time_start):.1f}s')
 
 
-@main.command('ms')
+@main.command()
 @click.option('-di', '--data-import', type=click.Path(exists=True), required=True, help='Data file path for import')
 @click.option('-de', '--data-export', type=click.Path(), required=True, help='Data file path for export')
 @click.option('-t', '--target', required=True, help='Name of target column')
@@ -87,7 +87,7 @@ def microservices(data_import: str, data_export: str, target: str, rows: int):
     click.echo(f'Task takes: {(time_end - time_start):.1f}s')
 
 
-@main.command('nn')
+@main.command()
 @click.option('-tnd', '--train-data', type=click.Path(exists=True), required=True, help='Training data file path')
 @click.option('-ttd', '--test-data', type=click.Path(exists=True), required=True, help='Testing data file path')
 @click.option('-mi', '--module-import', type=click.Path(exists=True), help='Module file path for import')
@@ -187,7 +187,7 @@ def neural_network(
     click.echo(f'Task takes: {(time_end - time_start):.1f}s')
 
 
-@main.command('dt')
+@main.command()
 @click.option('-tnd', '--train-data', type=click.Path(exists=True), required=True, help='Training data file path')
 @click.option('-ttd', '--test-data', type=click.Path(exists=True), required=True, help='Testing data file path')
 @click.option('-mi', '--module-import', type=click.Path(exists=True), help='Module file path for import')
@@ -280,7 +280,7 @@ def decision_tree(
     click.echo(f'Task takes: {(time_end - time_start):.1f}s')
 
 
-@main.command('rf')
+@main.command()
 @click.option('-tnd', '--train-data', type=click.Path(exists=True), required=True, help='Training data file path')
 @click.option('-ttd', '--test-data', type=click.Path(exists=True), required=True, help='Testing data file path')
 @click.option('-mi', '--module-import', type=click.Path(exists=True), help='Module file path for import')
@@ -293,7 +293,7 @@ def decision_tree(
 @click.option('-c', '--criterion', type=click.Choice(['gini', 'entropy']), default='gini', help='Quality function')
 @click.option('-t', '--target', required=True, help='Name of target column')
 @click.option('-v', '--visuals', is_flag=True, help='Show visuals')
-def decision_tree(
+def random_forest(
         train_data: str,
         test_data: str,
         module_import: str,
