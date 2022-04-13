@@ -96,7 +96,7 @@ def microservices(data_import: str, data_export: str, target: str, rows: int):
 @click.option('-vs', '--valid-split', type=click.FloatRange(0, 1), default=0.3, help='Validation split')
 @click.option('-bs', '--batch-size', type=click.IntRange(1, 32_768), default=32, help='Batch size')
 @click.option('-lr', '--learning-rate', type=click.FloatRange(0, 1), default=0.001, help='Learning rate')
-@click.option('-e', '--epochs', type=click.IntRange(1, 10_000), default=100, help='Batch size')
+@click.option('-e', '--epochs', type=click.IntRange(1, 10_000), default=100, help='Number of epochs')
 @click.option('-t', '--target', required=True, help='Name of target column')
 @click.option('-v', '--visuals', is_flag=True, help='Show visuals')
 def neural_network(
