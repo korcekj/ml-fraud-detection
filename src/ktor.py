@@ -107,14 +107,19 @@ class MicroServices:
     async def __run(self):
         """
         Run coroutines using Python concurrency libraries (asynchronously)
+        :return: list of processed transactions
         """
+        transactions = []
         coroutines = self.coroutines
-        return await gather(*coroutines, return_exceptions=True)
+        for i in range(0, len(coroutines), 3):
+            batch_coroutines = coroutines[i * 3: (i * 3) + 3]
+            transactions += await gather(*batch_coroutines, return_exceptions=True)
+        return transactions
 
     def fraudulent(self):
         """
         Find fraudulent transactions
-
+        :return: MicroService object
         """
         transactions = run(self.__run())
         for transaction in transactions:
