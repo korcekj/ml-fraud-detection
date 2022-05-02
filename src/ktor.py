@@ -111,8 +111,8 @@ class MicroServices:
         """
         transactions = []
         coroutines = self.coroutines
-        for i in range(0, len(coroutines), 3):
-            batch_coroutines = coroutines[i * 3: (i * 3) + 3]
+        for i in range(0, len(coroutines), 8):
+            batch_coroutines = coroutines[i: i + 8]
             transactions += await gather(*batch_coroutines, return_exceptions=True)
         return transactions
 
@@ -136,7 +136,7 @@ class MicroServices:
         cards = self.__data.df['cc_num'].unique()
         target = self.__data.target
         for card in cards:
-            transactions = self.__data.df.loc[self.__data.df['cc_num'] == card]
+            transactions = self.__data.df[self.__data.df['cc_num'] == card]
             coroutines.append(self.__client_transactions(transactions, target))
         return coroutines
 
