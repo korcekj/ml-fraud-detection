@@ -145,27 +145,22 @@ class TorchNeuralNetwork(Module):
         self.eval()
         # Initialize result arrays
         y_pred_list = []
-        y_actual_list = []
         # Do not perform back-propagation during inference
         with torch.no_grad():
             # Iterate over each feature and label
             for inputs, targets in test_dl:
                 # Get a prediction
                 y_pred = self(inputs)
-                # Get an actual
-                actual = targets.numpy()
                 # Get and round prediction to 0 or 1
                 y_pred = y_pred.detach().numpy()
                 y_pred = y_pred.round()
                 # Append to list of predicted and actual values
                 y_pred_list.append(y_pred)
-                y_actual_list.append(actual)
 
         # Flatten out the lists
         y_pred_list = [x.squeeze().tolist() for x in y_pred_list]
-        y_actual_list = [x.squeeze().tolist() for x in y_actual_list]
 
-        return y_actual_list, y_pred_list
+        return y_pred_list
 
 
 class NeuralNetwork(Model, Visualization):
@@ -289,7 +284,8 @@ class NeuralNetwork(Model, Visualization):
         # Initialize data loaders
         test_dl = test_data.get_dataloader(batch_size=1)
         # Predict targets
-        targets, targets_predicted = self.__model.evaluate(test_dl)
+        targets = test_data.df[test_data.target].values
+        targets_predicted = self.__model.evaluate(test_dl)
         # Classification report
         conf_matrix = confusion_matrix(targets, targets_predicted)
         conf_matrix = conf_matrix / np.sum(conf_matrix)
