@@ -95,7 +95,7 @@ class RandomForest(Model, Visualization):
         :param overwrite: boolean
         :return: Model object
         """
-        self.__write(f'{dir_path}/dt.model.joblib', overwrite)
+        self.__write(f'{dir_path}/rf.model.joblib', overwrite)
         return self
 
     def fit(self, train_data: Data, valid_data: Data, params: dict):
