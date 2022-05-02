@@ -297,6 +297,8 @@ class NeuralNetwork(Model, Visualization):
         vis = MatPlotVis('neural_network_test')
         vis.add_graph(
             lambda ax: sns.heatmap(data=conf_matrix, ax=ax, annot=True, cbar=False, fmt='.2%', linewidths=.5),
+            x_lab='predicted',
+            y_lab='actual'
         )
         self._visualize(vis)
         return self
