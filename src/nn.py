@@ -289,7 +289,7 @@ class NeuralNetwork(Model, Visualization):
         # Classification report
         conf_matrix = confusion_matrix(targets, targets_predicted)
         conf_matrix = conf_matrix / np.sum(conf_matrix)
-        class_report = classification_report(targets, targets_predicted)
+        class_report = classification_report(targets, targets_predicted, digits=4)
 
         click.echo(f'\n{class_report}')
 
