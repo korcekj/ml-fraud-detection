@@ -148,9 +148,3 @@ docker-compose.yml
 /data
 !/data/fraudTrain.csv
 !/data/fraudTest.csv
-
-# Models
-/models/**
-
-# Visuals
-/visuals/**
